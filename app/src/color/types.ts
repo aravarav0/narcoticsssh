@@ -69,6 +69,9 @@ export type ClassifyDebug = {
   patchLabs: Record<PatchId, Lab>
   patchRgb: Record<PatchId, Rgb8>
   ccmResidual: number | null
+  /** Conservative, explainable confidence in calibration and class separation. */
+  confidence: "high" | "moderate" | "low"
+  confidenceScore: number
 }
 
 export type ClassifyOutput = {
