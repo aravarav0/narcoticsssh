@@ -94,8 +94,8 @@ export function ResultView(props: {
           <div className="section-head">
             <p className="section-title">Colour match</p>
             {props.debug && (
-              <span className={`confidence-badge ${props.debug.confidence}`}>
-                {props.debug.confidence} confidence · {props.debug.confidenceScore}/100
+              <span className={`confidence-badge ${props.debug.measurementQuality}`}>
+                {qualityLabel(props.debug.measurementQuality)}
               </span>
             )}
           </div>
@@ -185,6 +185,12 @@ export function ResultView(props: {
       </button>
     </>
   )
+}
+
+function qualityLabel(quality: ClassifyDebug["measurementQuality"]) {
+  if (quality === "valid") return "measurement valid"
+  if (quality === "retake") return "retake required"
+  return "colour inconclusive"
 }
 
 function Meter(props: { label: string; value: number; tone: ResultLabel; isWinner: boolean }) {

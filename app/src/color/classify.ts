@@ -52,10 +52,12 @@ export function classifyImage(
     if (p.id !== "white" && p.id !== "black" && p.clipFraction > THRESHOLDS.clipFractionMax) {
       flags.push("clipping")
     }
+    if (p.channelSpread > THRESHOLDS.maxPatchChannelSpread) flags.push("patch_uneven")
   }
   if (kit.pixelCount < THRESHOLDS.minPatchPixels) flags.push("patch_too_small")
   if (kit.clipFraction > THRESHOLDS.clipFractionMax) flags.push("clipping")
   if (kit.glareFraction > THRESHOLDS.glareFractionMax) flags.push("glare")
+  if (kit.channelSpread > THRESHOLDS.maxKitChannelSpread) flags.push("kit_uneven")
 
   const whiteLab = rgb8ToLab(byId(patches, "white").medianRgb)
   const blackLab = rgb8ToLab(byId(patches, "black").medianRgb)
@@ -63,6 +65,8 @@ export function classifyImage(
 
   const chromatic = (["red", "yellow", "purple"] as const).map((id) => chroma(rgb8ToLab(byId(patches, id).medianRgb)))
   if (chromatic.every((c) => c < THRESHOLDS.minChromaticPatchChroma)) flags.push("card_missing")
+  const chromaticLabs = (["red", "yellow", "purple"] as const).map((id) => rgb8ToLab(byId(patches, id).medianRgb))
+  if (minPairwiseDeltaE(chromaticLabs) < THRESHOLDS.minChromaticPatchSeparation) flags.push("card_inconsistent")
 
   const observed = PATCH_ORDER.map((id) => byId(patches, id).medianRgb)
   const targetXyz = PATCH_ORDER.map((id) => linearToXyz(rgb8ToLinear(targets[id])))
@@ -99,27 +103,25 @@ export function classifyImage(
   if (d1 > THRESHOLDS.deltaEMax) flags.push("far_from_all_refs")
   if (d2 - d1 < THRESHOLDS.deltaEMargin) flags.push("classes_too_close")
 
-  const fatal = flags.some((f) =>
+  const retake = flags.some((f) =>
     f === "card_missing" ||
     f === "patch_too_small" ||
     f === "clipping" ||
     f === "glare" ||
-    f === "far_from_all_refs" ||
-    f === "classes_too_close",
+    f === "patch_uneven" ||
+    f === "kit_uneven" ||
+    f === "card_inconsistent",
   )
+  const colourInconclusive = flags.some((f) => f === "far_from_all_refs" || f === "classes_too_close")
 
   let result: ResultLabel = "inconclusive"
-  if (!fatal) {
+  if (!retake && !colourInconclusive) {
     if (nearest === "positive") result = "positive"
     else if (nearest === "negative") result = "negative"
     else result = "inconclusive"
   }
 
-  const confidenceScore = Math.max(
-    0,
-    Math.min(100, Math.round(100 - d1 * 2 - Math.max(0, THRESHOLDS.deltaEMargin - (d2 - d1)) * 8 - (flags.length ? 35 : 0))),
-  )
-  const confidence = confidenceScore >= 75 ? "high" : confidenceScore >= 45 ? "moderate" : "low"
+  const measurementQuality = retake ? "retake" : result === "inconclusive" ? "inconclusive" : "valid"
 
   const patchLabs = {} as Record<PatchId, Lab>
   const patchRgb = {} as Record<PatchId, Rgb8>
@@ -145,10 +147,17 @@ export function classifyImage(
       patchLabs,
       patchRgb,
       ccmResidual: ccm?.residualRms ?? null,
-      confidence,
-      confidenceScore,
+      measurementQuality,
     },
   }
+}
+
+function minPairwiseDeltaE(labs: Lab[]): number {
+  let min = Infinity
+  for (let i = 0; i < labs.length; i++) {
+    for (let j = i + 1; j < labs.length; j++) min = Math.min(min, deltaE76(labs[i], labs[j]))
+  }
+  return min
 }
 
 function byId<T extends { id: PatchId }>(rows: T[], id: PatchId): T {

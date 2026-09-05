@@ -37,6 +37,11 @@ export type QualityFlag =
   | "ccm_unstable"
   | "classes_too_close"
   | "far_from_all_refs"
+  | "patch_uneven"
+  | "kit_uneven"
+  | "card_inconsistent"
+  | "calibration_incomplete"
+  | "outside_calibrated_range"
 
 export type PatchStats = {
   id: PatchId
@@ -45,6 +50,8 @@ export type PatchStats = {
   medianRgb: Rgb8
   clipFraction: number
   glareFraction: number
+  /** Robust 90th–10th percentile channel spread. Large values suggest mixed pixels. */
+  channelSpread: number
 }
 
 export type KitStats = {
@@ -53,6 +60,7 @@ export type KitStats = {
   medianRgb: Rgb8
   clipFraction: number
   glareFraction: number
+  channelSpread: number
 }
 
 export type ClassifyDebug = {
@@ -69,9 +77,8 @@ export type ClassifyDebug = {
   patchLabs: Record<PatchId, Lab>
   patchRgb: Record<PatchId, Rgb8>
   ccmResidual: number | null
-  /** Conservative, explainable confidence in calibration and class separation. */
-  confidence: "high" | "moderate" | "low"
-  confidenceScore: number
+  /** Capture validity, never a probability or an accuracy claim. */
+  measurementQuality: "valid" | "retake" | "inconclusive"
 }
 
 export type ClassifyOutput = {

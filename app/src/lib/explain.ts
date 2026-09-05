@@ -9,6 +9,11 @@ export const FLAG_SHORT: Record<QualityFlag, string> = {
   ccm_unstable: "Weak calibration",
   classes_too_close: "Close match",
   far_from_all_refs: "No clear match",
+  patch_uneven: "Patch not uniform",
+  kit_uneven: "Test area not uniform",
+  card_inconsistent: "Card alignment failed",
+  calibration_incomplete: "Need calibration samples",
+  outside_calibrated_range: "Outside calibrated range",
 }
 
 const FLAG_WHY: Record<QualityFlag, string> = {
@@ -26,6 +31,16 @@ const FLAG_WHY: Record<QualityFlag, string> = {
     "Positive and negative were almost equally close. Guessing would be dishonest, so the call is inconclusive.",
   far_from_all_refs:
     "After correction, the kit colour did not sit near pale, purple, or muddy. The app will not invent a match.",
+  patch_uneven:
+    "At least one card patch contains too much colour variation. Reposition the card so only the matte square fills its guide.",
+  kit_uneven:
+    "The test area contains mixed pixels or a border. Reframe so the guide contains only the developed test colour.",
+  card_inconsistent:
+    "The chromatic card patches do not have the expected separation. Check card alignment and avoid shadows across the card.",
+  calibration_incomplete:
+    "The local reference set needs more labelled simulated positive and negative captures before it can support a field call.",
+  outside_calibrated_range:
+    "This colour is outside the locally calibrated reference range. The app will not extrapolate.",
 }
 
 export function explainCall(result: ResultLabel, debug: ClassifyDebug): {
@@ -69,7 +84,7 @@ export function explainCall(result: ResultLabel, debug: ClassifyDebug): {
       "The kit looks uncoloured / pale. It sits nearer the negative reference than purple, so this is a presumptive negative."
   } else if (fatal.includes("card_missing")) {
     headline = "No reliable colour card in this photo. The app refuses to call positive or negative."
-  } else if (fatal.includes("glare") || fatal.includes("clipping")) {
+  } else if (debug.measurementQuality === "retake") {
     headline = "The photo is optically unusable (glare or clipped highlights). Retake with a slight tilt."
   } else if (fatal.includes("classes_too_close")) {
     headline = "The two nearest classes are too close together. Inconclusive is the honest call."

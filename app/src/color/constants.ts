@@ -31,6 +31,11 @@ export const THRESHOLDS = {
   deltaEMargin: 6,
   /** Residual of CCM fit; above this we fall back to von Kries. */
   ccmResidualMax: 0.08,
+  /** 90–10 channel range. Tune only against a labelled capture set. */
+  maxPatchChannelSpread: 36,
+  maxKitChannelSpread: 72,
+  /** Require at least this much separation among the three chromatic patches. */
+  minChromaticPatchSeparation: 12,
 }
 
 export const CLIP_LO = 2

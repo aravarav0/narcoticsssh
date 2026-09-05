@@ -15,6 +15,7 @@ export function sampleRect(image: PixelBuffer, rect: RectNorm): {
   medianRgb: Rgb8
   clipFraction: number
   glareFraction: number
+  channelSpread: number
 } {
   const { x0, y0, x1, y1 } = rectToPixels(rect, image.width, image.height)
   const rs: number[] = []
@@ -53,6 +54,7 @@ export function sampleRect(image: PixelBuffer, rect: RectNorm): {
       medianRgb: { r: 0, g: 0, b: 0 },
       clipFraction: 1,
       glareFraction: 1,
+      channelSpread: 255,
     }
   }
 
@@ -62,6 +64,7 @@ export function sampleRect(image: PixelBuffer, rect: RectNorm): {
     medianRgb: { r: median(rs), g: median(gs), b: median(bs) },
     clipFraction: clip / pixelCount,
     glareFraction: glare / pixelCount,
+    channelSpread: Math.max(percentile(rs, 0.9) - percentile(rs, 0.1), percentile(gs, 0.9) - percentile(gs, 0.1), percentile(bs, 0.9) - percentile(bs, 0.1)),
   }
 }
 
@@ -94,4 +97,13 @@ function median(values: number[]): number {
   const s = values.slice().sort((a, b) => a - b)
   const mid = Math.floor(s.length / 2)
   return s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2
+}
+
+function percentile(values: number[], q: number): number {
+  const s = values.slice().sort((a, b) => a - b)
+  if (s.length === 0) return 0
+  const pos = (s.length - 1) * q
+  const lo = Math.floor(pos)
+  const hi = Math.ceil(pos)
+  return s[lo] + (s[hi] - s[lo]) * (pos - lo)
 }

@@ -98,8 +98,7 @@ describe("classifyImage", () => {
     expect(out.result).toBe("positive")
     expect(out.presumptive).toBe(true)
     expect(out.debug.method).toBe("ccm")
-    expect(out.debug.confidence).toBe("high")
-    expect(out.debug.confidenceScore).toBeGreaterThanOrEqual(75)
+    expect(out.debug.measurementQuality).toBe("valid")
   })
 
   it("calls a pale kit negative", () => {
@@ -121,11 +120,21 @@ describe("classifyImage", () => {
     const out = classifyImage({ data, width, height })
     expect(out.result).toBe("inconclusive")
     expect(out.debug.qualityFlags).toContain("card_missing")
-    expect(out.debug.confidence).toBe("low")
+    expect(out.debug.measurementQuality).toBe("retake")
   })
 
   it("keeps default class centres in a usable ΔE range", () => {
     const c = defaultClassLabs()
     expect(deltaE76(c.positive, c.negative)).toBeGreaterThan(20)
+  })
+
+  it("rejects an uneven card patch instead of averaging mixed colours", () => {
+    const image = syntheticFrame(CARD_SRGB.purple)
+    const patch = DEFAULT_LAYOUT.patches.red
+    fillRect(image, { ...patch, w: patch.w / 2 }, { r: 255, g: 255, b: 255 })
+    const out = classifyImage(image)
+    expect(out.result).toBe("inconclusive")
+    expect(out.debug.qualityFlags).toContain("patch_uneven")
+    expect(out.debug.measurementQuality).toBe("retake")
   })
 })

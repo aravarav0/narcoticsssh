@@ -242,9 +242,9 @@ p { margin: 0; line-height: 1.55; }
   border: 1px solid var(--line);
   white-space: nowrap;
 }
-.confidence-badge.high { color: var(--pos); border-color: #b8ddc8; background: #e6f5ed; }
-.confidence-badge.moderate { color: var(--inc); border-color: #efd2b0; background: #fff4ec; }
-.confidence-badge.low { color: #a43e2a; border-color: #f0c4bc; background: #fff0ed; }
+.confidence-badge.valid { color: var(--pos); border-color: #b8ddc8; background: #e6f5ed; }
+.confidence-badge.inconclusive { color: var(--inc); border-color: #efd2b0; background: #fff4ec; }
+.confidence-badge.retake { color: #a43e2a; border-color: #f0c4bc; background: #fff0ed; }
 
 /* ─── Form controls ───────────────────────────────────────────────────── */
 label { display: block; font-size: 0.83rem; color: #395149; font-weight: 750; margin-bottom: 0.4rem; }
