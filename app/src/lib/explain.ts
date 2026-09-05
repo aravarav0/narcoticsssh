@@ -25,7 +25,7 @@ const FLAG_WHY: Record<QualityFlag, string> = {
   classes_too_close:
     "Positive and negative were almost equally close. Guessing would be dishonest, so the call is inconclusive.",
   far_from_all_refs:
-    "After correction, the kit colour did not sit near white, magenta, or muddy. The app will not invent a match.",
+    "After correction, the kit colour did not sit near white, purple, or muddy. The app will not invent a match.",
 }
 
 export function explainCall(result: ResultLabel, debug: ClassifyDebug): {
@@ -37,7 +37,7 @@ export function explainCall(result: ResultLabel, debug: ClassifyDebug): {
   const { positive, negative, muddy } = debug.deltaE
   const colour = debug.kitColour
   const named = colour?.label ?? "UNKNOWN"
-  const wantPos = colour?.expectedPositive ?? "MAGENTA"
+  const wantPos = colour?.expectedPositive ?? "PURPLE"
   const wantNeg = colour?.expectedNegative ?? "WHITE"
   const nearestClass =
     positive <= negative && positive <= muddy

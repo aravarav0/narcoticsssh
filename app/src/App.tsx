@@ -165,6 +165,9 @@ export default function App() {
           result={current.result}
           imageDataUrl={current.imageDataUrl}
           debug={current.debug}
+          detectedLayout={current.detectedLayout}
+          kitAutoFound={current.kitAutoFound}
+          relitImageDataUrl={current.relitImageDataUrl}
           onSeal={() => setPage("record")}
           onRetake={() => setPage("capture")}
           extra={

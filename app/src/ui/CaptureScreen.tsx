@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from "react"
 import { classifyImage } from "../color/classify"
-import { canvasToJpeg, loadImage, openRearCamera } from "../lib/camera"
+import { detectCard } from "../color/detect"
+import { relightCanvas } from "../color/relight"
+import { DEFAULT_LAYOUT } from "../color/constants"
+import { canvasToJpeg, loadImage, loadOrientedImage, openRearCamera } from "../lib/camera"
 import { readGps, type GpsFix } from "../lib/gps"
 import { sha256Hex } from "../lib/hash"
 import { loadClassLabs, loadPrintRunRgb } from "../lib/printRun"
@@ -9,25 +12,30 @@ import { loadRecords, makeRecord, type TestRecord } from "../lib/store"
 import { sealRecord, type EvidenceSeal } from "../lib/seal"
 import { CaptureOverlay } from "./CaptureOverlay"
 
-function phoneHttpsUrl() {
-  const host = window.location.hostname
-  const port = window.location.port
-  const portPart = port ? `:${port}` : ""
-  if (host !== "localhost" && host !== "127.0.0.1") {
-    return `https://${host}${portPart}`
-  }
+function isIos() {
+  return /iPhone|iPad|iPod/i.test(navigator.userAgent)
+}
+
+function isInsecureRemote() {
+  return !window.isSecureContext && location.hostname !== "localhost" && location.hostname !== "127.0.0.1"
+}
+
+function phoneUrl() {
   return window.location.origin
 }
 
 function cameraErrorMessage(err: unknown) {
+  if (isIos() && isInsecureRemote()) {
+    return "iPhone Safari will not even ask for live camera on http://. Tap Take photo (opens Camera) — or reopen this page as https:// from the laptop terminal (Network address), then Show Details → Visit this website."
+  }
   const msg = err instanceof Error ? err.message : ""
   if (/NotAllowed|Permission|denied/i.test(msg)) {
-    return "Camera permission denied. In the address bar click the camera icon → Allow. Close Zoom/Teams and other localhost tabs."
+    return "Camera permission denied. In Safari: aA or the address-bar camera icon → Allow. Close other tabs using the camera."
   }
   if (/NotReadable|in use|TrackStart|Could not start/i.test(msg)) {
     return "Camera is on but another app or browser tab is using it. Close those, then tap Enable camera."
   }
-  return "Live preview failed. Close other tabs using the camera, then tap Enable camera — or use Take photo."
+  return "Live preview failed. On iPhone tap Take photo. That opens the Camera app and still classifies the colour."
 }
 
 async function attachStream(video: HTMLVideoElement, stream: MediaStream) {
@@ -111,6 +119,14 @@ export function CaptureScreen(props: {
   }
 
   useEffect(() => {
+    if (isIos()) {
+      if (isInsecureRemote()) {
+        setError(
+          "iPhone will not prompt for live camera on http://. Tap Take photo below — that opens Camera and still runs the colour test. For live preview: on the laptop terminal copy the Network https:// address, open it in Safari, tap Show Details → Visit this website, then Enable camera.",
+        )
+      }
+      return
+    }
     let cancelled = false
     void (async () => {
       try {
@@ -133,24 +149,45 @@ export function CaptureScreen(props: {
     }
   }, [])
 
-  async function fromSource(source: CanvasImageSource, srcW: number, srcH: number, mirror = false) {
+  async function fromSource(
+    source: CanvasImageSource,
+    srcW: number,
+    srcH: number,
+    opts?: { mirror?: boolean; fit?: "cover" | "native" },
+  ) {
     setBusy(true)
     setError(null)
     try {
+      const mirror = opts?.mirror ?? false
+      const fit = opts?.fit ?? "cover"
       const stage = stageRef.current
-      const w = Math.max(360, Math.round((stage?.clientWidth ?? 360) * 2))
-      const h = Math.max(480, Math.round((stage?.clientHeight ?? 480) * 2))
       const canvas = document.createElement("canvas")
-      canvas.width = w
-      canvas.height = h
+      if (fit === "native") {
+        const maxSide = 1600
+        const s = Math.min(1, maxSide / Math.max(srcW, srcH))
+        canvas.width = Math.max(2, Math.round(srcW * s))
+        canvas.height = Math.max(2, Math.round(srcH * s))
+      } else {
+        canvas.width = Math.max(360, Math.round((stage?.clientWidth ?? 360) * 2))
+        canvas.height = Math.max(480, Math.round((stage?.clientHeight ?? 480) * 2))
+      }
       const ctx = canvas.getContext("2d", { willReadFrequently: true })
       if (!ctx) throw new Error("no canvas")
-      drawCover(ctx, source, srcW, srcH, mirror)
-      const pixels = ctx.getImageData(0, 0, w, h)
+      if (fit === "native") {
+        ctx.drawImage(source, 0, 0, canvas.width, canvas.height)
+      } else {
+        drawCover(ctx, source, srcW, srcH, mirror)
+      }
+      const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height)
+      const detected = detectCard(pixels)
       const classified = classifyImage(pixels, {
+        layout: detected?.layout ?? DEFAULT_LAYOUT,
         printRunRgb: loadPrintRunRgb(),
         classLabs: loadClassLabs(),
       })
+      const relitImageDataUrl = classified.debug.ccmMatrix
+        ? relightCanvas(canvas, classified.debug.ccmMatrix)
+        : null
       const blob = await canvasToJpeg(canvas, 0.92)
       const bytes = await blob.arrayBuffer()
       const [hex, dataUrl] = await Promise.all([
@@ -167,6 +204,9 @@ export function CaptureScreen(props: {
         sha256Hex: hex,
         gps: null,
         classified,
+        detectedLayout: detected?.layout ?? null,
+        kitAutoFound: detected?.kitAutoFound ?? false,
+        relitImageDataUrl,
       })
       record.previousRecordHash = loadRecords()[0]?.seal?.payloadHash ?? null
       props.onCaptured(record)
@@ -194,37 +234,40 @@ export function CaptureScreen(props: {
       setError("Wait for the camera preview.")
       return
     }
-    await fromSource(video, video.videoWidth, video.videoHeight, mirror)
+    await fromSource(video, video.videoWidth, video.videoHeight, { mirror, fit: "cover" })
   }
 
   async function onFile(file: File | undefined) {
     if (!file) return
-    const url = URL.createObjectURL(file)
-    try {
-      const img = await loadImage(url)
-      await fromSource(img, img.naturalWidth, img.naturalHeight)
-    } finally {
-      URL.revokeObjectURL(url)
-    }
+    const oriented = await loadOrientedImage(file)
+    await fromSource(oriented.source, oriented.width, oriented.height, { fit: "native" })
   }
 
   async function loadDemo(name: "demo-positive.png" | "demo-negative.png" | "demo-black.png") {
     const img = await loadImage(`/${name}`)
-    await fromSource(img, img.naturalWidth, img.naturalHeight)
+    await fromSource(img, img.naturalWidth, img.naturalHeight, { fit: "native" })
   }
 
   return (
     <>
       <p className="kicker">SIH26231 · capture</p>
-      <h1>Hold the pocket card under the kit.</h1>
+      <h1>Get the card and kit in one photo.</h1>
       <p className="muted">
-        One card, one photo. Fill <strong>FILL KIT</strong> with the test square — the app names
-        that colour (black, red, magenta, white, …) and compares it to this dummy test:{" "}
-        <strong>magenta = positive</strong>, <strong>white = negative</strong>. Fill each gold box
-        with that card square. Daylight card is the default. Tilt to kill glare.
+        Put the six‑square card and the kit square in the same frame — the app{" "}
+        <strong>finds the card by itself</strong>, reconstructs all six squares, and reads the kit
+        above it. Framing boxes below are only a hint. It corrects the lighting from the card, so any
+        lamp is fine. Dummy test: <strong>purple / lavender = positive</strong>,{" "}
+        <strong>white = negative</strong>. Tilt to kill glare.
       </p>
       <div className="stage" ref={stageRef}>
-        <video ref={videoRef} className={mirror ? "mirrored" : undefined} playsInline autoPlay muted />
+        <video
+          ref={videoRef}
+          className={mirror ? "mirrored" : undefined}
+          playsInline
+          webkit-playsinline="true"
+          autoPlay
+          muted
+        />
         <CaptureOverlay />
         <button
           type="button"
@@ -243,14 +286,8 @@ export function CaptureScreen(props: {
         ) : null}
       </div>
       {error ? <p className="error">{error}</p> : null}
-      <button className="ghost" onClick={() => void startCamera()} disabled={busy}>
-        Enable camera
-      </button>
-      <button className="primary" onClick={() => void snap()} disabled={busy}>
-        {busy ? "Reading colour…" : "Capture & classify"}
-      </button>
-      <label className="ghost file-btn">
-        Take photo (iPhone camera)
+      <label className="primary file-btn">
+        Take photo (iPhone — use this)
         <input
           type="file"
           accept="image/*"
@@ -258,12 +295,18 @@ export function CaptureScreen(props: {
           onChange={(e) => void onFile(e.target.files?.[0])}
         />
       </label>
+      <button className="ghost" onClick={() => void startCamera()} disabled={busy}>
+        Enable live camera
+      </button>
+      <button className="ghost" onClick={() => void snap()} disabled={busy}>
+        {busy ? "Reading colour…" : "Capture live preview"}
+      </button>
       <PhoneLinkCard copied={copiedUrl} onCopied={setCopiedUrl} />
       <div className="demo-card">
         <div className="demo-card-title">Demo (no camera or card needed)</div>
         <div className="row">
           <button className="ghost" onClick={() => void loadDemo("demo-positive.png")} disabled={busy}>
-            Demo magenta (+)
+            Demo purple (+)
           </button>
           <button className="ghost" onClick={() => void loadDemo("demo-negative.png")} disabled={busy}>
             Demo white (−)
@@ -297,10 +340,10 @@ export function CaptureScreen(props: {
 }
 
 function PhoneLinkCard(props: { copied: boolean; onCopied: (v: boolean) => void }) {
-  const href = phoneHttpsUrl()
+  const href = phoneUrl()
   const loopback =
     location.hostname === "localhost" || location.hostname === "127.0.0.1"
-  const onIphone = /iPhone|iPad|iPod/i.test(navigator.userAgent)
+  const onIphone = isIos()
 
   async function copy() {
     try {
@@ -317,15 +360,16 @@ function PhoneLinkCard(props: { copied: boolean; onCopied: (v: boolean) => void 
       <div className="demo-card-title">iPhone camera</div>
       {onIphone ? (
         <p className="muted">
-          You are on the phone. Tap <strong>Allow</strong> for Camera, then Capture. If live view
-          fails, tap Take photo — Safari opens the rear camera.
+          Tap the green <strong>Take photo</strong> button — Safari opens the Camera app. That
+          works on http. Live preview needs https: laptop terminal → Network address starting
+          with https:// → Safari → Show Details → Visit this website → then Enable live camera.
         </p>
       ) : (
         <>
           <p className="muted">
-            Same Wi‑Fi as this laptop. In Safari open the <strong>Network</strong> https:// address
-            from the terminal (not localhost). If it says Not Private: Show Details → Visit this
-            website. Then Allow Camera.
+            Same Wi‑Fi. In the laptop terminal copy the <strong>Network</strong> address that
+            starts with https:// (not localhost). On iPhone Safari: Show Details → Visit this
+            website. Then Allow Camera, or just use Take photo.
           </p>
           {!loopback ? (
             <img

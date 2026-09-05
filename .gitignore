@@ -3,5 +3,17 @@ dist/
 .DS_Store
 .vite/
 *.local
+__pycache__/
+*.pyc
 calibration/inbox/*
 !calibration/inbox/.gitkeep
+
+# Personal / classroom photos — do not push faces or kit shots
+IMG_*.PNG
+IMG_*.png
+IMG_*.HEIC
+*-relit.png
+*-overlay-debug.png
+01-card-only-daylight*.jpg
+02-negative-card-daylight.jpg
+03-positive-card-daylight.jpg

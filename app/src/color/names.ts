@@ -29,8 +29,7 @@ const HUE_BANDS: { max: number; id: string; label: string }[] = [
   { max: 230, id: "sky-blue", label: "SKY BLUE" },
   { max: 255, id: "blue", label: "BLUE" },
   { max: 275, id: "indigo", label: "INDIGO" },
-  { max: 308, id: "purple", label: "PURPLE" },
-  { max: 335, id: "magenta", label: "MAGENTA" },
+  { max: 335, id: "purple", label: "PURPLE" },
   { max: 348, id: "pink", label: "PINK" },
   { max: 361, id: "red", label: "RED" },
 ]
@@ -59,7 +58,7 @@ export function nameColour(rgb: Rgb8): NamedHit {
   const C = chroma(lab)
 
   if (C < ACHRO_CHROMA || hsv.s < ACHRO_SAT) {
-    if (lab.L >= 88) return { id: "white", label: "WHITE", hex, hue: hsv.h }
+    if (lab.L >= 85) return { id: "white", label: "WHITE", hex, hue: hsv.h }
     if (lab.L <= 42) return { id: "black", label: "BLACK", hex, hue: hsv.h }
     return { id: "gray", label: "GRAY", hex, hue: hsv.h }
   }

@@ -100,8 +100,9 @@ describe("colour names", () => {
     expect(nameLab(rgb8ToLab(CARD_SRGB.black)).id).toBe("black")
     expect(nameColour(CARD_SRGB.red).id).toBe("red")
     expect(nameColour(CARD_SRGB.yellow).id).toBe("yellow")
-    expect(nameLab(rgb8ToLab(CARD_SRGB.white)).id).toBe("white")
-    expect(nameColour(POSITIVE_SRGB).id).toBe("magenta")
+    // The reference card's "white" square photographs dim (L≈83) → light gray.
+    expect(nameLab(rgb8ToLab(CARD_SRGB.white)).id).toBe("gray")
+    expect(nameColour(POSITIVE_SRGB).id).toBe("purple")
     expect(nameColour(NEGATIVE_SRGB).id).toBe("white")
   })
 
@@ -116,23 +117,28 @@ describe("colour names", () => {
     expect(nameColour({ r: 40, g: 170, b: 70 }).id).toBe("green")
   })
 
-  it("compares magenta to the expected positive colour", () => {
+  it("treats a darker camera reading of the same paper as positive purple", () => {
+    const otherLamp = { r: 198, g: 130, b: 176 }
+    const info = describeKitColour(rgb8ToLab(otherLamp), otherLamp, defaultClassLabs())
+    expect(info.vsExpected).toBe("positive")
+  })
+
+  it("compares the card purple to the expected positive colour", () => {
     const info = describeKitColour(rgb8ToLab(POSITIVE_SRGB), POSITIVE_SRGB, defaultClassLabs())
-    expect(info.label).toBe("MAGENTA")
-    expect(info.hex).toBe("#C682B0")
+    expect(info.label).toBe("PURPLE")
     expect(info.vsExpected).toBe("positive")
   })
 })
 
 describe("classifyImage", () => {
-  it("calls a magenta kit positive when the card is in frame", () => {
+  it("calls a purple kit positive when the card is in frame", () => {
     const out = classifyImage(syntheticFrame(POSITIVE_SRGB))
     expect(out.result).toBe("positive")
     expect(out.presumptive).toBe(true)
     expect(out.debug.method).toBe("ccm")
     expect(out.debug.confidence).toBe("high")
     expect(out.debug.confidenceScore).toBeGreaterThanOrEqual(75)
-    expect(out.debug.kitColour.label).toBe("MAGENTA")
+    expect(out.debug.kitColour.label).toBe("PURPLE")
     expect(out.debug.kitColour.hex).toMatch(/^#[0-9A-F]{6}$/)
     expect(out.debug.kitColour.vsExpected).toBe("positive")
   })

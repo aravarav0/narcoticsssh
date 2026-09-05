@@ -1,5 +1,5 @@
 import { DEFAULT_LAYOUT } from "../color/constants"
-import type { RectNorm } from "../color/types"
+import type { Layout, RectNorm } from "../color/types"
 
 function Box({ rect, label, kit }: { rect: RectNorm; label: string; kit?: boolean }) {
   return (
@@ -18,10 +18,15 @@ function Box({ rect, label, kit }: { rect: RectNorm; label: string; kit?: boolea
 }
 
 export function CaptureOverlay() {
-  const p = DEFAULT_LAYOUT.patches
+  return <LayoutOverlay layout={DEFAULT_LAYOUT} kitLabel="fill kit" />
+}
+
+/** Draws boxes for any layout — used with the auto-detected layout on results. */
+export function LayoutOverlay({ layout, kitLabel = "kit" }: { layout: Layout; kitLabel?: string }) {
+  const p = layout.patches
   return (
     <div className="overlay">
-      <Box kit rect={DEFAULT_LAYOUT.kit} label="fill kit" />
+      <Box kit rect={layout.kit} label={kitLabel} />
       <Box rect={p.white} label="white" />
       <Box rect={p.gray} label="gray" />
       <Box rect={p.red} label="red" />

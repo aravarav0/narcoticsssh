@@ -83,6 +83,26 @@ export function loadImage(url: string): Promise<HTMLImageElement> {
   })
 }
 
+/** iPhone JPEGs store orientation in EXIF. Use the upright pixels for sampling. */
+export async function loadOrientedImage(file: File): Promise<{
+  source: CanvasImageSource
+  width: number
+  height: number
+}> {
+  try {
+    const bitmap = await createImageBitmap(file, { imageOrientation: "from-image" })
+    return { source: bitmap, width: bitmap.width, height: bitmap.height }
+  } catch {
+    const url = URL.createObjectURL(file)
+    try {
+      const img = await loadImage(url)
+      return { source: img, width: img.naturalWidth, height: img.naturalHeight }
+    } finally {
+      URL.revokeObjectURL(url)
+    }
+  }
+}
+
 export function drawToCanvas(
   source: CanvasImageSource,
   width: number,

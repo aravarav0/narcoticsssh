@@ -80,6 +80,8 @@ export type ClassifyDebug = {
   patchLabs: Record<PatchId, Lab>
   patchRgb: Record<PatchId, Rgb8>
   ccmResidual: number | null
+  /** The fitted 3×3 linear-RGB→XYZ matrix, reused to re-light the whole frame. */
+  ccmMatrix: import("./ccm").Mat3 | null
   /** Conservative, explainable confidence in calibration and class separation. */
   confidence: "high" | "moderate" | "low"
   confidenceScore: number

@@ -1,4 +1,4 @@
-import type { ClassifyDebug, ClassifyOutput, ResultLabel } from "../color/types"
+import type { ClassifyDebug, ClassifyOutput, Layout, ResultLabel } from "../color/types"
 import type { GpsFix } from "./gps"
 import type { EvidenceSeal } from "./seal"
 
@@ -17,6 +17,12 @@ export type TestRecord = {
   flags: string[]
   notes: string
   debug: ClassifyDebug | null
+  /** Where the app actually sampled (auto-detected card + kit), normalised. */
+  detectedLayout?: Layout | null
+  /** True when a coloured kit was found on its own (vs. a fallback box). */
+  kitAutoFound?: boolean
+  /** In-memory only: the frame re-lit with the CCM. Not persisted (too big). */
+  relitImageDataUrl?: string | null
   /** SHA-256 of the preceding signed payload. Makes record reordering visible. */
   previousRecordHash: string | null
   seal?: EvidenceSeal
@@ -35,7 +41,9 @@ export function loadRecords(): TestRecord[] {
 }
 
 export function saveRecord(record: TestRecord) {
-  const all = [record, ...loadRecords()].slice(0, MAX)
+  // The re-lit preview is large; keep it only in memory, not in localStorage.
+  const slim: TestRecord = { ...record, relitImageDataUrl: null }
+  const all = [slim, ...loadRecords()].slice(0, MAX)
   localStorage.setItem(KEY, JSON.stringify(all))
 }
 
@@ -45,6 +53,9 @@ export function makeRecord(input: {
   sha256Hex: string
   gps: GpsFix | null
   classified: ClassifyOutput
+  detectedLayout?: Layout | null
+  kitAutoFound?: boolean
+  relitImageDataUrl?: string | null
 }): TestRecord {
   return {
     id: crypto.randomUUID(),
@@ -61,6 +72,9 @@ export function makeRecord(input: {
     flags: input.classified.debug.qualityFlags,
     notes: "",
     debug: input.classified.debug,
+    detectedLayout: input.detectedLayout ?? null,
+    kitAutoFound: input.kitAutoFound ?? false,
+    relitImageDataUrl: input.relitImageDataUrl ?? null,
     previousRecordHash: null,
   }
 }

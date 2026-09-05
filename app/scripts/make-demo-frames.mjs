@@ -11,17 +11,17 @@ mkdirSync(outDir, { recursive: true })
 const W = 360
 const H = 480
 const CARD = {
-  white: [250, 250, 252],
-  gray: [214, 211, 218],
-  red: [249, 113, 86],
-  black: [92, 90, 93],
-  yellow: [247, 243, 91],
-  purple: [209, 163, 211],
+  white: [205, 207, 201],
+  gray: [123, 122, 127],
+  red: [150, 48, 46],
+  black: [27, 30, 28],
+  yellow: [198, 196, 74],
+  purple: [123, 91, 131],
 }
-const MAGENTA = [198, 130, 176]
-const WHITE_KIT = [239, 249, 247]
+const KIT_POSITIVE = [146, 114, 155]
+
 const LAYOUT = {
-  kit: [0.36, 0.08, 0.28, 0.34],
+  kit: [0.36, 0.08, 0.28, 0.22],
   white: [0.06, 0.5, 0.28, 0.2],
   gray: [0.36, 0.5, 0.28, 0.2],
   red: [0.66, 0.5, 0.28, 0.2],
@@ -79,7 +79,7 @@ function chunk(type, data) {
   return Buffer.concat([len, t, data, crc])
 }
 
-writeFileSync(join(outDir, "demo-positive.png"), raster(MAGENTA))
-writeFileSync(join(outDir, "demo-negative.png"), raster(WHITE_KIT))
+writeFileSync(join(outDir, "demo-positive.png"), raster(KIT_POSITIVE))
+writeFileSync(join(outDir, "demo-negative.png"), raster([239, 249, 247]))
 writeFileSync(join(outDir, "demo-black.png"), raster(CARD.black))
 console.log("wrote public/demo-positive.png, demo-negative.png, demo-black.png")

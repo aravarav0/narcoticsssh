@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from "react"
-import type { ClassifyDebug, QualityFlag, ResultLabel } from "../color/types"
+import { DEFAULT_LAYOUT } from "../color/constants"
+import type { ClassifyDebug, Layout, QualityFlag, ResultLabel } from "../color/types"
 import { closenessPct, explainCall, FLAG_SHORT, rgbCss } from "../lib/explain"
 import {
   benchmarkStatus,
@@ -8,6 +9,7 @@ import {
   setNegativeLab,
   setPositiveLab,
 } from "../lib/printRun"
+import { CaptureOverlay, LayoutOverlay } from "./CaptureOverlay"
 import { Banner } from "./Banner"
 
 function ResultGlyph({ result }: { result: ResultLabel }) {
@@ -42,12 +44,18 @@ export function ResultView(props: {
   result: ResultLabel
   imageDataUrl: string
   debug: ClassifyDebug | null
+  detectedLayout?: Layout | null
+  kitAutoFound?: boolean
+  relitImageDataUrl?: string | null
   onSeal: () => void
   onRetake: () => void
   extra?: ReactNode
 }) {
   const [openTech, setOpenTech] = useState(false)
   const [benchNote, setBenchNote] = useState<string | null>(null)
+  const [showRelit, setShowRelit] = useState(true)
+  const overlayLayout = props.detectedLayout ?? DEFAULT_LAYOUT
+  const autoDetected = props.detectedLayout != null
   const explained = props.debug ? explainCall(props.result, props.debug) : null
   const d = props.debug?.deltaE
   const flags: QualityFlag[] = props.debug?.qualityFlags ?? []
@@ -130,7 +138,7 @@ export function ResultView(props: {
             closer.
           </p>
           <Meter
-            label={`Positive · ${props.debug?.kitColour?.expectedPositive ?? "magenta"}`}
+            label={`Positive · ${props.debug?.kitColour?.expectedPositive ?? "purple"}`}
             value={d.positive}
             tone="positive"
             isWinner={winner === "positive"}
@@ -156,13 +164,53 @@ export function ResultView(props: {
         </div>
       )}
 
-      <img className="shot" src={props.imageDataUrl} alt="Captured field test" />
+      {props.relitImageDataUrl && (
+        <div className="card">
+          <div className="section-head">
+            <p className="section-title">
+              {showRelit ? "Corrected image (lighting removed)" : "Original photo"}
+            </p>
+            <button className="ghost relit-toggle" onClick={() => setShowRelit((v) => !v)}>
+              {showRelit ? "Show original" : "Show corrected"}
+            </button>
+          </div>
+          <p className="muted" style={{ marginBottom: "0.6rem" }}>
+            Same colour-correction matrix the six card squares set is applied to the whole frame,
+            so the card lands on its reference colours and the kit is read in neutral light. This is
+            the “reverse-engineer the lighting from the card” step, made visible.
+          </p>
+          <div className="shot-wrap">
+            <img
+              className="shot"
+              src={showRelit ? props.relitImageDataUrl : props.imageDataUrl}
+              alt={showRelit ? "Lighting-corrected field test" : "Original field test"}
+            />
+          </div>
+        </div>
+      )}
+
+      <div className="shot-wrap">
+        <img className="shot" src={props.imageDataUrl} alt="Captured field test" />
+        {autoDetected ? (
+          <LayoutOverlay
+            layout={overlayLayout}
+            kitLabel={props.kitAutoFound ? "kit (found)" : "kit"}
+          />
+        ) : (
+          <CaptureOverlay />
+        )}
+      </div>
+      <p className="muted">
+        {autoDetected
+          ? "The app found the card by itself and reconstructed all six squares — the gold boxes are exactly where it sampled. The pink box is the kit it read."
+          : "Card not auto-detected, so these are the default framing boxes. Gold boxes are what the app actually read."}
+      </p>
 
       {props.debug && (
         <div className="demo-card">
           <div className="demo-card-title">Set benchmark (your sheets / lighting)</div>
           <p className="muted">
-            Defaults are the daylight craft-sheet card plus magenta (positive) and white (negative).
+            Defaults are the daylight craft-sheet card: lavender purple = positive, white = negative.
             Override here if the lamp changes. Card saved: {bench.card ? "yes" : "not yet"}.
             Kit colours saved: {bench.classes ? "yes" : "not yet"}.
           </p>
@@ -179,7 +227,7 @@ export function ResultView(props: {
             className="ghost"
             onClick={() => {
               setPositiveLab(props.debug!.kitLab)
-              setBenchNote("Saved this kit colour as POSITIVE. Next magenta (or this colour) should call positive.")
+              setBenchNote("Saved this kit colour as POSITIVE. Next purple shot should call positive.")
             }}
           >
             2 · This kit is my POSITIVE
@@ -197,7 +245,7 @@ export function ResultView(props: {
             className="ghost"
             onClick={() => {
               clearBenchmarks()
-              setBenchNote("Cleared. Back to daylight magenta / white defaults.")
+              setBenchNote("Cleared. Back to daylight purple / white defaults.")
             }}
           >
             Reset to daylight defaults
