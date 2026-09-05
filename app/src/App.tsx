@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react"
 import { Banner } from "./ui/Banner"
 import { CaptureScreen } from "./ui/CaptureScreen"
-import { downloadDataUrl, downloadJson } from "./lib/download"
+import { ResultView } from "./ui/ResultView"
 import { flipFirstByte, sha256Hex } from "./lib/hash"
 import { CALIBRATION_SHOTS, type CalibrationShotId } from "./lib/shots"
 import { loadRecords, saveRecord, type TestRecord } from "./lib/store"
@@ -93,47 +93,19 @@ export default function App() {
       )}
 
       {page === "result" && current && (
-        <>
-          <p className="kicker">Result</p>
-          <h1>
-            <span className={`chip ${current.result}`}>{current.result}</span>
-          </h1>
-          <Banner />
-          <img src={current.imageDataUrl} alt="Captured test" style={{ width: "100%", border: "1px solid var(--line)" }} />
-          <p className="debug">
-            Calibration: {current.method}
-            {current.flags.length ? ` · flags: ${current.flags.join(", ")}` : " · quality ok"}
-          </p>
-          <pre className="debug">{debug}</pre>
-          {shotId ? (
-            <button
-              className="primary"
-              onClick={() => {
-                const name = shotId
-                downloadDataUrl(`${name}.jpg`, current.imageDataUrl)
-                downloadJson(`${name}.json`, {
-                  shotId: name,
-                  result: current.result,
-                  method: current.method,
-                  flags: current.flags,
-                  debug: JSON.parse(debug || "{}"),
-                })
-                const i = CALIBRATION_SHOTS.findIndex((s) => s.id === name)
-                const next = CALIBRATION_SHOTS[i + 1]
-                if (next) setShotId(next.id)
-                setPage("capture")
-              }}
-            >
-              Save this shot · next
-            </button>
-          ) : null}
-          <button className="ghost" onClick={() => setPage("record")}>
-            Open sealed record
-          </button>
-          <button className="ghost" onClick={() => setPage("capture")}>
-            New capture
-          </button>
-        </>
+        <ResultView
+          record={current}
+          debugJson={debug}
+          shotId={shotId}
+          onSaveShotAdvance={() => {
+            const i = CALIBRATION_SHOTS.findIndex((s) => s.id === shotId)
+            const next = CALIBRATION_SHOTS[i + 1]
+            if (next) setShotId(next.id)
+            setPage("capture")
+          }}
+          onOpenRecord={() => setPage("record")}
+          onNewCapture={() => setPage("capture")}
+        />
       )}
 
       {page === "record" && current && (
@@ -151,6 +123,8 @@ export default function App() {
                 : "not available"}
             </p>
             <p>Call: {current.result}</p>
+            <p>Measurement status: {current.status}</p>
+            {current.reasons.length ? <p className="muted">{current.reasons.join(" ")}</p> : null}
             <p className="muted">SHA-256 of JPEG bytes</p>
             <p className="mono">{current.sha256Hex}</p>
             {flippedHash ? (
@@ -196,6 +170,7 @@ function LogScreen(props: {
     return (
       r.officerId.toLowerCase().includes(q) ||
       r.result.includes(q) ||
+      (r.status ?? "").includes(q) ||
       r.sha256Hex.includes(q)
     )
   })
@@ -212,7 +187,7 @@ function LogScreen(props: {
         {rows.length === 0 ? <p className="muted">No records yet.</p> : null}
         {rows.map((r) => (
           <button key={r.id} className="item" onClick={() => props.onOpen(r)}>
-            <strong className={`chip ${r.result}`}>{r.result}</strong>
+            <strong className={`chip ${r.status === "retake" ? "retake" : r.result}`}>{r.status === "retake" ? "retake" : r.result}</strong>
             <div className="muted">
               {r.officerId} · {r.capturedAt.replace("T", " ").slice(0, 19)}
             </div>

@@ -1,0 +1,23 @@
+{
+  "note": "Simulated labels only. Fill predictedResult and predictedStatus after a held-out session. Do not tune THRESHOLDS on the same rows you report. Do not invent accuracy.",
+  "rows": [
+    {
+      "imagePath": "eval/captures/session-holdout/example-pos.jpg",
+      "simulatedLabel": "positive",
+      "deviceId": "device-a",
+      "sessionId": "session-holdout",
+      "condition": "daylight",
+      "predictedResult": null,
+      "predictedStatus": null
+    },
+    {
+      "imagePath": "eval/captures/session-holdout/example-neg.jpg",
+      "simulatedLabel": "negative",
+      "deviceId": "device-a",
+      "sessionId": "session-holdout",
+      "condition": "yellow-lamp",
+      "predictedResult": null,
+      "predictedStatus": null
+    }
+  ]
+}

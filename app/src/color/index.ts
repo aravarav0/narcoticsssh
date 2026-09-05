@@ -1,5 +1,6 @@
 export { classifyImage } from "./classify"
 export { CARD_SRGB, defaultClassLabs } from "./card"
 export { DEFAULT_LAYOUT, THRESHOLDS } from "./constants"
+export { deriveClassModel } from "./classModel"
 export { rgb8ToLab, deltaE76, srgb8ToLinear } from "./srgb"
-export type { ClassifyOutput, ResultLabel, PixelBuffer } from "./types"
+export type { ClassifyOutput, MeasurementStatus, ResultLabel, PixelBuffer } from "./types"

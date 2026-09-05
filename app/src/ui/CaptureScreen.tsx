@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react"
 import { classifyImage } from "../color/classify"
 import { canvasToJpeg, loadImage, openRearCamera } from "../lib/camera"
+import { loadClassModel, calibrationCounts } from "../lib/calibrationSet"
 import { readGps } from "../lib/gps"
 import { sha256Hex } from "../lib/hash"
-import { loadPrintRunRgb } from "../lib/printRun"
+import { loadCardBaseline } from "../lib/printRun"
 import { CALIBRATION_SHOTS, type CalibrationShotId } from "../lib/shots"
 import { makeRecord, type TestRecord } from "../lib/store"
 import { CaptureOverlay } from "./CaptureOverlay"
@@ -73,7 +74,10 @@ export function CaptureScreen(props: {
       if (!ctx) throw new Error("no canvas")
       drawCover(ctx, source, srcW, srcH)
       const pixels = ctx.getImageData(0, 0, w, h)
-      const classified = classifyImage(pixels, { printRunRgb: loadPrintRunRgb() })
+      const classified = classifyImage(pixels, {
+        cardBaselineRgb: loadCardBaseline()?.rgb,
+        classModel: loadClassModel(),
+      })
       const blob = await canvasToJpeg(canvas, 0.92)
       const bytes = await blob.arrayBuffer()
       const [hex, gps, dataUrl] = await Promise.all([
@@ -129,6 +133,7 @@ export function CaptureScreen(props: {
     <>
       <p className="kicker">SIH26231 · capture</p>
       <h1>Card in frame. Kit in the top box.</h1>
+      <CalCounts />
       <label htmlFor="shot">Calibration shot</label>
       <select
         id="shot"
@@ -179,5 +184,16 @@ export function CaptureScreen(props: {
         Open log
       </button>
     </>
+  )
+}
+
+function CalCounts() {
+  const c = calibrationCounts()
+  const ready = c.positive >= c.min && c.negative >= c.min
+  return (
+    <p className="muted">
+      Simulated calibration set: + {c.positive}/{c.min} · − {c.negative}/{c.min}
+      {ready ? "" : " · incomplete — class calls stay inconclusive until both sides have enough valid samples."}
+    </p>
   )
 }

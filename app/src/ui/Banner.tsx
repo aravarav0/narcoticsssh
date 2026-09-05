@@ -1,7 +1,7 @@
 export function Banner() {
   return (
     <div className="banner">
-      PRESUMPTIVE field result — not a lab confirmation. Not proof of possession.
+      PRESUMPTIVE field result — laboratory confirmation required. Not proof of possession.
     </div>
   )
 }

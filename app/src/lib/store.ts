@@ -1,4 +1,4 @@
-import type { ClassifyOutput, ResultLabel } from "../color/types"
+import type { ClassifyOutput, Lab, MeasurementStatus, QualityStatus, ResultLabel } from "../color/types"
 import type { GpsFix } from "./gps"
 
 export type TestRecord = {
@@ -11,6 +11,10 @@ export type TestRecord = {
   imageDataUrl: string
   sha256Hex: string
   result: ResultLabel
+  status: MeasurementStatus
+  qualityStatus: QualityStatus
+  reasons: string[]
+  kitLab: Lab | null
   presumptive: true
   method: ClassifyOutput["debug"]["method"]
   flags: string[]
@@ -23,9 +27,32 @@ const MAX = 40
 export function loadRecords(): TestRecord[] {
   try {
     const raw = localStorage.getItem(KEY)
-    return raw ? (JSON.parse(raw) as TestRecord[]) : []
+    const parsed = raw ? (JSON.parse(raw) as Partial<TestRecord>[]) : []
+    return parsed.map(coerceRecord)
   } catch {
     return []
+  }
+}
+
+function coerceRecord(r: Partial<TestRecord>): TestRecord {
+  return {
+    id: r.id ?? crypto.randomUUID(),
+    officerId: r.officerId ?? "",
+    capturedAt: r.capturedAt ?? "",
+    lat: r.lat ?? null,
+    lon: r.lon ?? null,
+    gpsAccuracyM: r.gpsAccuracyM ?? null,
+    imageDataUrl: r.imageDataUrl ?? "",
+    sha256Hex: r.sha256Hex ?? "",
+    result: r.result ?? "inconclusive",
+    status: r.status ?? (r.result === "inconclusive" ? "inconclusive" : "valid"),
+    qualityStatus: r.qualityStatus ?? "valid",
+    reasons: r.reasons ?? [],
+    kitLab: r.kitLab ?? null,
+    presumptive: true,
+    method: r.method ?? "none",
+    flags: r.flags ?? [],
+    notes: r.notes ?? "",
   }
 }
 
@@ -51,6 +78,10 @@ export function makeRecord(input: {
     imageDataUrl: input.imageDataUrl,
     sha256Hex: input.sha256Hex,
     result: input.classified.result,
+    status: input.classified.status,
+    qualityStatus: input.classified.qualityStatus,
+    reasons: input.classified.reasons,
+    kitLab: input.classified.debug.kitLab,
     presumptive: true,
     method: input.classified.debug.method,
     flags: input.classified.debug.qualityFlags,

@@ -3,7 +3,8 @@ import { rgb8ToLab } from "./srgb"
 
 /**
  * Print these as matte ≥4 cm squares. Hostel printers will miss the numbers;
- * after printing, photograph the card once and overwrite `printRunRgb` in localStorage.
+ * after printing, photograph the card once under controlled light and store that
+ * JPEG as a *card baseline* (not a spectrophotometer reading).
  */
 export const CARD_SRGB: Record<PatchId, Rgb8> = {
   white: { r: 255, g: 255, b: 255 },
@@ -17,8 +18,9 @@ export const CARD_SRGB: Record<PatchId, Rgb8> = {
 export const PATCH_ORDER: PatchId[] = ["white", "black", "gray", "red", "yellow", "purple"]
 
 /**
- * Default class centres in CIE Lab, derived from intended sRGB.
- * Field/Colour will replace these after measuring the simulated kit.
+ * Intended-sRGB Lab landmarks for documentation and unit tests only.
+ * Classification must not use these as a one-shot class model. Build a
+ * multi-sample local calibration set instead.
  *
  * negative  — pale / colourless (high L*, low chroma)
  * positive  — intended purple patch (typical “colour developed” stand-in)

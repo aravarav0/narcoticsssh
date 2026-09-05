@@ -107,6 +107,16 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .chip.positive { background: var(--pos); color: #04150c; }
 .chip.negative { background: var(--neg); color: #041018; }
 .chip.inconclusive { background: var(--inc); color: #1a0e02; }
+.chip.retake { background: #7a3b3b; color: #fdeaea; }
+.chip.valid { background: #2a4a3a; color: #d5f0e0; }
+
+.reasons {
+  margin: 0.35rem 0 0;
+  padding-left: 1.1rem;
+  color: var(--text);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
 
 .mono { font-family: ui-monospace, Consolas, monospace; font-size: 0.78rem; word-break: break-all; }
 .muted { color: var(--muted); font-size: 0.9rem; }

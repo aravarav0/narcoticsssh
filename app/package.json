@@ -7,7 +7,8 @@
     "dev": "vite --host",
     "build": "vite build",
     "preview": "vite preview --host",
-    "test": "vitest run"
+    "test": "vitest run",
+    "eval:classify": "node scripts/evaluate-classify.mjs"
   },
   "dependencies": {
     "react": "^19.2.8",
