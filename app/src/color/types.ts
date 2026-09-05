@@ -32,6 +32,8 @@ export type ResultLabel = "positive" | "negative" | "inconclusive"
 export type KitColourInfo = {
   id: string
   label: string
+  hex: string
+  hue: number
   deltaE: number
   expectedPositive: string
   expectedNegative: string

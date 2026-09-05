@@ -503,6 +503,25 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .hero-colour-match.positive { color: #075c3e; }
 .hero-colour-match.negative { color: #155a78; }
 .hero-colour-match.neither { color: #8b430f; }
+.hero-hex {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.55rem;
+  margin: 0.12rem 0 0;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.hero-hue {
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
 .hero-why { font-size: 0.93rem; margin-top: 0.5rem; }
 @keyframes rise {
   from { opacity: 0; transform: translateY(10px); }

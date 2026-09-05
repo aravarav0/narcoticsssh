@@ -3,7 +3,7 @@ import { CARD_SRGB, NEGATIVE_SRGB, POSITIVE_SRGB, defaultClassLabs } from "./car
 import { classifyImage } from "./classify"
 import { DEFAULT_LAYOUT } from "./constants"
 import { rgb8ToHsv } from "./hsv"
-import { describeKitColour, nameLab } from "./names"
+import { describeKitColour, nameColour, nameLab } from "./names"
 import { deltaE76, rgb8ToLab, srgb8ToLinear } from "./srgb"
 import { fitCcm, intendedPatchXyz, vonKries } from "./ccm"
 import { rgb8ToLinear } from "./srgb"
@@ -98,16 +98,28 @@ describe("von Kries", () => {
 describe("colour names", () => {
   it("names the daylight swatches", () => {
     expect(nameLab(rgb8ToLab(CARD_SRGB.black)).id).toBe("black")
-    expect(nameLab(rgb8ToLab(CARD_SRGB.red)).id).toBe("red")
-    expect(nameLab(rgb8ToLab(CARD_SRGB.yellow)).id).toBe("yellow")
+    expect(nameColour(CARD_SRGB.red).id).toBe("red")
+    expect(nameColour(CARD_SRGB.yellow).id).toBe("yellow")
     expect(nameLab(rgb8ToLab(CARD_SRGB.white)).id).toBe("white")
-    expect(nameLab(rgb8ToLab(POSITIVE_SRGB)).id).toBe("magenta")
-    expect(nameLab(rgb8ToLab(NEGATIVE_SRGB)).id).toBe("white")
+    expect(nameColour(POSITIVE_SRGB).id).toBe("magenta")
+    expect(nameColour(NEGATIVE_SRGB).id).toBe("white")
+  })
+
+  it("does not call lime-green yellow", () => {
+    const lime = nameColour({ r: 160, g: 210, b: 40 })
+    expect(lime.id).toBe("lime")
+    expect(lime.label).toBe("LIME")
+    expect(lime.hex).toMatch(/^#[0-9A-F]{6}$/)
+  })
+
+  it("names a mid green as green", () => {
+    expect(nameColour({ r: 40, g: 170, b: 70 }).id).toBe("green")
   })
 
   it("compares magenta to the expected positive colour", () => {
-    const info = describeKitColour(rgb8ToLab(POSITIVE_SRGB), defaultClassLabs())
+    const info = describeKitColour(rgb8ToLab(POSITIVE_SRGB), POSITIVE_SRGB, defaultClassLabs())
     expect(info.label).toBe("MAGENTA")
+    expect(info.hex).toBe("#C682B0")
     expect(info.vsExpected).toBe("positive")
   })
 })
@@ -121,6 +133,7 @@ describe("classifyImage", () => {
     expect(out.debug.confidence).toBe("high")
     expect(out.debug.confidenceScore).toBeGreaterThanOrEqual(75)
     expect(out.debug.kitColour.label).toBe("MAGENTA")
+    expect(out.debug.kitColour.hex).toMatch(/^#[0-9A-F]{6}$/)
     expect(out.debug.kitColour.vsExpected).toBe("positive")
   })
 
@@ -135,6 +148,13 @@ describe("classifyImage", () => {
     const out = classifyImage(syntheticFrame(CARD_SRGB.black))
     expect(out.debug.kitColour.label).toBe("BLACK")
     expect(out.debug.kitColour.vsExpected).toBe("neither")
+    expect(out.result).not.toBe("positive")
+  })
+
+  it("names a lime kit lime, not yellow", () => {
+    const out = classifyImage(syntheticFrame({ r: 160, g: 210, b: 40 }))
+    expect(out.debug.kitColour.id).toBe("lime")
+    expect(out.debug.kitColour.label).toBe("LIME")
     expect(out.result).not.toBe("positive")
   })
 

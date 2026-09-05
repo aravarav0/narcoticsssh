@@ -87,12 +87,18 @@ export function ResultView(props: {
           <div className="hero-colour">
             <span
               className="hero-swatch"
-              style={{ background: rgbCss(props.debug.kitRgb) }}
+              style={{ background: props.debug.kitColour.hex || rgbCss(props.debug.kitRgb) }}
               aria-hidden="true"
             />
             <div>
               <div className="hero-colour-kicker">Kit colour</div>
               <div className="hero-colour-name">{props.debug.kitColour.label}</div>
+              {props.debug.kitColour.hex ? (
+                <p className="hero-hex">
+                  <span>{props.debug.kitColour.hex}</span>
+                  <span className="hero-hue">hue {Math.round(props.debug.kitColour.hue)}°</span>
+                </p>
+              ) : null}
               <p className={`hero-colour-match ${props.debug.kitColour.vsExpected}`}>
                 {props.debug.kitColour.vsExpected === "positive"
                   ? `Matches POSITIVE (${props.debug.kitColour.expectedPositive})`

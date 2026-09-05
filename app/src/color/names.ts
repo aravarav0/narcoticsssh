@@ -1,73 +1,116 @@
-import { CARD_SRGB, POSITIVE_SRGB } from "./card"
 import { THRESHOLDS } from "./constants"
+import { rgb8ToHsv } from "./hsv"
 import { chroma, deltaE76, rgb8ToLab } from "./srgb"
 import type { KitColourInfo, Lab, Rgb8 } from "./types"
 
-export type NamedColourId =
-  | "white"
-  | "gray"
-  | "black"
-  | "red"
-  | "yellow"
-  | "purple"
-  | "magenta"
-  | "orange"
-  | "green"
-  | "blue"
-  | "brown"
-
 export type NamedHit = {
-  id: NamedColourId
+  id: string
   label: string
-  deltaE: number
+  hex: string
+  hue: number
 }
 
-type NamedSwatch = {
-  id: NamedColourId
-  label: string
-  rgb: Rgb8
-  chromatic: boolean
-}
+const ACHRO_CHROMA = 10
+const ACHRO_SAT = 0.12
 
-/** Names the kit by nearest measured daylight swatch, plus a few extra hues. */
-const SWATCHES: NamedSwatch[] = [
-  { id: "white", label: "WHITE", rgb: CARD_SRGB.white, chromatic: false },
-  { id: "gray", label: "GRAY", rgb: CARD_SRGB.gray, chromatic: false },
-  { id: "black", label: "BLACK", rgb: CARD_SRGB.black, chromatic: false },
-  { id: "red", label: "RED", rgb: CARD_SRGB.red, chromatic: true },
-  { id: "yellow", label: "YELLOW", rgb: CARD_SRGB.yellow, chromatic: true },
-  { id: "purple", label: "PURPLE", rgb: CARD_SRGB.purple, chromatic: true },
-  { id: "magenta", label: "MAGENTA", rgb: POSITIVE_SRGB, chromatic: true },
-  { id: "orange", label: "ORANGE", rgb: { r: 230, g: 120, b: 40 }, chromatic: true },
-  { id: "green", label: "GREEN", rgb: { r: 46, g: 160, b: 70 }, chromatic: true },
-  { id: "blue", label: "BLUE", rgb: { r: 50, g: 90, b: 190 }, chromatic: true },
-  { id: "brown", label: "BROWN", rgb: { r: 140, g: 90, b: 50 }, chromatic: true },
+/** HSV hue bands — denser than the 6 card squares so lime is not called yellow. */
+const HUE_BANDS: { max: number; id: string; label: string }[] = [
+  { max: 12, id: "red", label: "RED" },
+  { max: 28, id: "red-orange", label: "RED-ORANGE" },
+  { max: 42, id: "orange", label: "ORANGE" },
+  { max: 54, id: "amber", label: "AMBER" },
+  { max: 68, id: "yellow", label: "YELLOW" },
+  { max: 86, id: "lime", label: "LIME" },
+  { max: 108, id: "yellow-green", label: "YELLOW-GREEN" },
+  { max: 145, id: "green", label: "GREEN" },
+  { max: 165, id: "spring-green", label: "SPRING GREEN" },
+  { max: 185, id: "teal", label: "TEAL" },
+  { max: 205, id: "cyan", label: "CYAN" },
+  { max: 230, id: "sky-blue", label: "SKY BLUE" },
+  { max: 255, id: "blue", label: "BLUE" },
+  { max: 275, id: "indigo", label: "INDIGO" },
+  { max: 308, id: "purple", label: "PURPLE" },
+  { max: 335, id: "magenta", label: "MAGENTA" },
+  { max: 348, id: "pink", label: "PINK" },
+  { max: 361, id: "red", label: "RED" },
 ]
 
-const LABS = SWATCHES.map((s) => ({ ...s, lab: rgb8ToLab(s.rgb) }))
+export function rgbToHex(rgb: Rgb8): string {
+  const h = (n: number) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, "0")
+  return `#${h(rgb.r)}${h(rgb.g)}${h(rgb.b)}`.toUpperCase()
+}
 
-/** Low-chroma colours are named white / gray / black by lightness, not by a faint tint. */
-const ACHRO_CHROMA = 10
+function hueId(h: number): { id: string; label: string } {
+  const x = ((h % 360) + 360) % 360
+  for (const band of HUE_BANDS) {
+    if (x < band.max) return { id: band.id, label: band.label }
+  }
+  return { id: "red", label: "RED" }
+}
+
+/**
+ * Name from the sampled sRGB (hue + lightness), not from nearest card square.
+ * A lime-green sheet must not snap to the yellow patch.
+ */
+export function nameColour(rgb: Rgb8): NamedHit {
+  const lab = rgb8ToLab(rgb)
+  const hsv = rgb8ToHsv(rgb)
+  const hex = rgbToHex(rgb)
+  const C = chroma(lab)
+
+  if (C < ACHRO_CHROMA || hsv.s < ACHRO_SAT) {
+    if (lab.L >= 88) return { id: "white", label: "WHITE", hex, hue: hsv.h }
+    if (lab.L <= 42) return { id: "black", label: "BLACK", hex, hue: hsv.h }
+    return { id: "gray", label: "GRAY", hex, hue: hsv.h }
+  }
+
+  // Dull orange at mid/low L* is brown, not "orange".
+  if (hsv.h >= 15 && hsv.h < 50 && lab.L < 52 && C < 42) {
+    return { id: "brown", label: "BROWN", hex, hue: hsv.h }
+  }
+
+  const hit = hueId(hsv.h)
+  let label = hit.label
+  if (lab.L < 32) label = `DARK ${label}`
+  else if (lab.L >= 84 && C < 32) label = `PALE ${label}`
+  return { id: hit.id, label, hex, hue: hsv.h }
+}
 
 export function nameLab(lab: Lab): NamedHit {
-  const pool = chroma(lab) < ACHRO_CHROMA ? LABS.filter((s) => !s.chromatic) : LABS
-  let best = pool[0]
-  let bestD = deltaE76(lab, best.lab)
-  for (let i = 1; i < pool.length; i++) {
-    const d = deltaE76(lab, pool[i].lab)
-    if (d < bestD) {
-      best = pool[i]
-      bestD = d
-    }
+  return nameColour(labToDisplayRgb(lab))
+}
+
+/** Approximate sRGB for naming a Lab centre (saved positive / negative). */
+function labToDisplayRgb(lab: Lab): Rgb8 {
+  const fy = (lab.L + 16) / 116
+  const fx = lab.a / 500 + fy
+  const fz = fy - lab.b / 200
+  const eps = 216 / 24389
+  const kappa = 24389 / 27
+  const inv = (t: number) => {
+    const t3 = t * t * t
+    return t3 > eps ? t3 : (116 * t - 16) / kappa
   }
-  return { id: best.id, label: best.label, deltaE: bestD }
+  const x = inv(fx) * 0.95047
+  const y = inv(fy)
+  const z = inv(fz) * 1.08883
+  const r = 3.2406 * x - 1.5372 * y - 0.4986 * z
+  const g = -0.9689 * x + 1.8758 * y + 0.0415 * z
+  const b = 0.0557 * x - 0.204 * y + 1.057 * z
+  const enc = (c: number) => {
+    const L = Math.max(0, c)
+    const s = L <= 0.0031308 ? 12.92 * L : 1.055 * L ** (1 / 2.4) - 0.055
+    return Math.round(Math.max(0, Math.min(1, s)) * 255)
+  }
+  return { r: enc(r), g: enc(g), b: enc(b) }
 }
 
 export function describeKitColour(
   kitLab: Lab,
+  kitRgb: Rgb8,
   classLabs: { negative: Lab; positive: Lab },
 ): KitColourInfo {
-  const observed = nameLab(kitLab)
+  const observed = nameColour(kitRgb)
   const expectedPositive = nameLab(classLabs.positive).label
   const expectedNegative = nameLab(classLabs.negative).label
   const dPos = deltaE76(kitLab, classLabs.positive)
@@ -77,5 +120,14 @@ export function describeKitColour(
   let vsExpected: KitColourInfo["vsExpected"] = "neither"
   if (dPos <= cap && dPos + margin < dNeg) vsExpected = "positive"
   else if (dNeg <= cap && dNeg + margin < dPos) vsExpected = "negative"
-  return { ...observed, expectedPositive, expectedNegative, vsExpected }
+  return {
+    id: observed.id,
+    label: observed.label,
+    hex: observed.hex,
+    hue: observed.hue,
+    deltaE: Math.min(dPos, dNeg),
+    expectedPositive,
+    expectedNegative,
+    vsExpected,
+  }
 }

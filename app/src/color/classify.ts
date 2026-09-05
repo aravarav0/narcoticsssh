@@ -148,7 +148,7 @@ export function classifyImage(
       ccmResidual: ccm?.residualRms ?? null,
       confidence,
       confidenceScore,
-      kitColour: describeKitColour(kitLab, classLabs),
+      kitColour: describeKitColour(kitLab, kit.medianRgb, classLabs),
     },
   }
 }

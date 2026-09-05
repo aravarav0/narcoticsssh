@@ -201,6 +201,7 @@ export default function App() {
           {current.debug?.kitColour ? (
             <p className="muted" style={{ marginTop: "0.35rem" }}>
               Kit colour <strong>{current.debug.kitColour.label}</strong>
+              {current.debug.kitColour.hex ? ` · ${current.debug.kitColour.hex}` : ""}
               {" · "}
               {current.debug.kitColour.vsExpected === "neither"
                 ? `not ${current.debug.kitColour.expectedPositive} or ${current.debug.kitColour.expectedNegative}`
@@ -218,7 +219,10 @@ export default function App() {
             </div>
             <div>
               <span>Observed colour</span>
-              <strong>{current.debug?.kitColour?.label ?? "—"}</strong>
+              <strong>
+                {current.debug?.kitColour?.label ?? "—"}
+                {current.debug?.kitColour?.hex ? ` · ${current.debug.kitColour.hex}` : ""}
+              </strong>
             </div>
             <div>
               <span>GPS</span>
@@ -324,7 +328,8 @@ function LogScreen(props: {
       r.officerId.toLowerCase().includes(q) ||
       r.result.includes(q) ||
       r.sha256Hex.includes(q) ||
-      (r.debug?.kitColour?.label.toLowerCase().includes(q) ?? false)
+      (r.debug?.kitColour?.label.toLowerCase().includes(q) ?? false) ||
+      (r.debug?.kitColour?.hex?.toLowerCase().includes(q) ?? false)
     )
   })
   return (
@@ -351,7 +356,10 @@ function LogScreen(props: {
           <button key={r.id} className="item" onClick={() => props.onOpen(r)}>
             <strong className={`chip ${r.result}`}>{r.result}</strong>
             {r.debug?.kitColour ? (
-              <div className="muted">{r.debug.kitColour.label}</div>
+              <div className="muted">
+                {r.debug.kitColour.label}
+                {r.debug.kitColour.hex ? ` · ${r.debug.kitColour.hex}` : ""}
+              </div>
             ) : null}
             <div className="muted">
               {r.officerId} · {r.capturedAt.replace("T", " ").slice(0, 19)}

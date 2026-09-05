@@ -48,7 +48,7 @@ export function explainCall(result: ResultLabel, debug: ClassifyDebug): {
 
   const bullets: string[] = []
 
-  bullets.push(`The kit colour is ${named}.`)
+  bullets.push(`The kit colour is ${named}${colour?.hex ? ` (${colour.hex})` : ""}.`)
 
   bullets.push(
     `This dummy test treats ${wantPos} as positive and ${wantNeg} as negative (unused kit).`,
