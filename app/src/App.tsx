@@ -1,14 +1,24 @@
-import { useMemo, useState } from "react"
+import { useMemo, useState, type ReactNode } from "react"
 import { Banner } from "./ui/Banner"
 import { CaptureScreen } from "./ui/CaptureScreen"
 import { downloadDataUrl, downloadJson } from "./lib/download"
 import { flipFirstByte, sha256Hex } from "./lib/hash"
-import { CALIBRATION_SHOTS, type CalibrationShotId } from "./lib/shots"
+import { type CalibrationShotId } from "./lib/shots"
 import { loadRecords, saveRecord, type TestRecord } from "./lib/store"
 import { loadImage } from "./lib/camera"
 import { evidencePayload, verifyRecordSeal } from "./lib/seal"
 
 type Page = "login" | "capture" | "result" | "record" | "log"
+type Analysis = { confidence?: string; confidenceScore?: number }
+const RESULT_COPY = {
+  positive: ["Presumptive positive", "The observed colour is consistent with the configured positive reference.", "Seal this field observation and retain the sample for laboratory confirmation."],
+  negative: ["Presumptive negative", "The observed colour is consistent with the configured negative reference.", "This remains a presumptive field observation; follow your operational protocol."],
+  inconclusive: ["Inconclusive", "The image quality or colour match was not reliable enough for a field call.", "Retake the photo with the colour card visible, evenly lit, and free of glare."],
+} as const
+
+function parseAnalysis(value: string): Analysis { try { return JSON.parse(value) as Analysis } catch { return {} } }
+function Header({ page, onLog }: { page: Page; onLog: () => void }) { return <header className="topbar"><div className="brand"><span className="brand-mark">◆</span>FieldSeal</div><div className="topbar-meta"><span>SIH26231</span>{page !== "login" ? <button className="text-button" onClick={onLog}>Test log</button> : null}</div></header> }
+function Workflow({ active }: { active: "capture" | "result" | "record" }) { const steps = ["capture", "result", "record"] as const; return <div className="workflow" aria-label="Test workflow">{steps.map((step, i) => <div className={`workflow-step ${step === active ? "active" : ""}`} key={step}><span>{i + 1}</span>{step === "record" ? "seal" : step}</div>)}</div> }
 
 export default function App() {
   const [page, setPage] = useState<Page>("login")
@@ -19,223 +29,21 @@ export default function App() {
   const [query, setQuery] = useState("")
   const [flippedHash, setFlippedHash] = useState<string | null>(null)
   const [sealVerified, setSealVerified] = useState<boolean | null>(null)
-  const [shotId, setShotId] = useState<CalibrationShotId | "">("01-card-only-daylight")
+  const [shotId, setShotId] = useState<CalibrationShotId | "">("")
   const records = useMemo(() => loadRecords(), [page, current])
+  const analysis = useMemo(() => parseAnalysis(debug), [debug])
+  function enter() { const id = draftId.trim(); if (!id) return; sessionStorage.setItem("sih26231.officer", id); setOfficerId(id); setPage("capture") }
+  function afterCapture(record: TestRecord, classifiedJson: string) { saveRecord(record); setCurrent(record); setDebug(classifiedJson); setFlippedHash(null); setSealVerified(null); setPage("result") }
+  async function proveHashMoves() { if (!current) return; const img = await loadImage(current.imageDataUrl); const canvas = document.createElement("canvas"); canvas.width = img.naturalWidth; canvas.height = img.naturalHeight; const ctx = canvas.getContext("2d"); if (!ctx) return; ctx.drawImage(img, 0, 0); const blob: Blob = await new Promise((resolve, reject) => canvas.toBlob((b) => b ? resolve(b) : reject(new Error("blob")), "image/jpeg", 0.92)); setFlippedHash(await sha256Hex(flipFirstByte(await blob.arrayBuffer()))) }
 
-  function enter() {
-    const id = draftId.trim()
-    if (!id) return
-    sessionStorage.setItem("sih26231.officer", id)
-    setOfficerId(id)
-    setPage("capture")
-  }
-
-  function afterCapture(record: TestRecord, classifiedJson: string) {
-    saveRecord(record)
-    setCurrent(record)
-    setDebug(classifiedJson)
-    setFlippedHash(null)
-    setSealVerified(null)
-    setPage("result")
-  }
-
-  async function proveHashMoves() {
-    if (!current) return
-    const img = await loadImage(current.imageDataUrl)
-    const canvas = document.createElement("canvas")
-    canvas.width = img.naturalWidth
-    canvas.height = img.naturalHeight
-    const ctx = canvas.getContext("2d")
-    if (!ctx) return
-    ctx.drawImage(img, 0, 0)
-    const blob: Blob = await new Promise((resolve, reject) =>
-      canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("blob"))), "image/jpeg", 0.92),
-    )
-    const flipped = flipFirstByte(await blob.arrayBuffer())
-    setFlippedHash(await sha256Hex(flipped))
-  }
-
-  return (
-    <div className="app">
-      {page === "login" && (
-        <>
-          <p className="kicker">NCB · SIH26231 · software prototype</p>
-          <h1>Digital Companion for Field Drug Testing</h1>
-          <Banner />
-          <p className="muted">
-            Photograph the kit with the colour card in the same frame. Classify presumptive
-            positive / negative / inconclusive. Seal the photo with time, GPS, officer ID, SHA-256.
-          </p>
-          <div className="card">
-            <label htmlFor="oid">Operator identifier</label>
-            <input
-              id="oid"
-              value={draftId}
-              onChange={(e) => setDraftId(e.target.value)}
-              placeholder="e.g. NCB-DEMO-01"
-              autoComplete="off"
-            />
-          </div>
-          <button className="primary" onClick={enter}>
-            Continue
-          </button>
-          <button className="ghost" onClick={() => setPage("log")}>
-            Search log
-          </button>
-        </>
-      )}
-
-      {page === "capture" && (
-        <CaptureScreen
-          officerId={officerId}
-          shotId={shotId}
-          onShotId={setShotId}
-          onCaptured={afterCapture}
-          onLog={() => setPage("log")}
-        />
-      )}
-
-      {page === "result" && current && (
-        <>
-          <p className="kicker">Result</p>
-          <h1>
-            <span className={`chip ${current.result}`}>{current.result}</span>
-          </h1>
-          <Banner />
-          <img src={current.imageDataUrl} alt="Captured test" style={{ width: "100%", border: "1px solid var(--line)" }} />
-          <p className="debug">
-            Calibration: {current.method}
-            {current.flags.length ? ` · flags: ${current.flags.join(", ")}` : " · quality ok"}
-          </p>
-          <p className="debug">Confidence: {JSON.parse(debug || "{}").confidence ?? "—"} ({JSON.parse(debug || "{}").confidenceScore ?? "—"}/100)</p>
-          <pre className="debug">{debug}</pre>
-          {shotId ? (
-            <button
-              className="primary"
-              onClick={() => {
-                const name = shotId
-                downloadDataUrl(`${name}.jpg`, current.imageDataUrl)
-                downloadJson(`${name}.json`, {
-                  shotId: name,
-                  result: current.result,
-                  method: current.method,
-                  flags: current.flags,
-                  debug: JSON.parse(debug || "{}"),
-                })
-                const i = CALIBRATION_SHOTS.findIndex((s) => s.id === name)
-                const next = CALIBRATION_SHOTS[i + 1]
-                if (next) setShotId(next.id)
-                setPage("capture")
-              }}
-            >
-              Save this shot · next
-            </button>
-          ) : null}
-          <button className="ghost" onClick={() => setPage("record")}>
-            Open sealed record
-          </button>
-          <button className="ghost" onClick={() => setPage("capture")}>
-            New capture
-          </button>
-        </>
-      )}
-
-      {page === "record" && current && (
-        <>
-          <p className="kicker">Tamper-evident record</p>
-          <h1>Presumptive sealed record</h1>
-          <Banner />
-          <div className="card">
-            <p>Officer: {current.officerId}</p>
-            <p>Time (UTC): {current.capturedAt}</p>
-            <p>
-              GPS:{" "}
-              {current.lat != null && current.lon != null
-                ? `${current.lat.toFixed(5)}, ${current.lon.toFixed(5)} ±${current.gpsAccuracyM ?? "?"}m`
-                : "not available"}
-            </p>
-            <p>Call: {current.result}</p>
-            <p className="muted">SHA-256 of JPEG bytes</p>
-            <p className="mono">{current.sha256Hex}</p>
-            <p className="muted">Evidence signature: {current.seal ? `P-256 · key ${current.seal.keyId}` : "legacy / unsigned"}</p>
-            {sealVerified != null ? <p className={sealVerified ? "seal-ok" : "seal-bad"}>{sealVerified ? "✓ Signature and sealed metadata verified" : "✕ Verification failed — record may have changed"}</p> : null}
-            {flippedHash ? (
-              <p className="mono hash-flip">After flipping 1 byte: {flippedHash}</p>
-            ) : null}
-          </div>
-          <button className="ghost" onClick={() => void proveHashMoves()}>
-            Flip one byte — hash must change
-          </button>
-          <button className="ghost" onClick={() => void verifyRecordSeal(current, current.seal).then(setSealVerified)}>
-            Verify digital signature
-          </button>
-          <button className="ghost" onClick={() => downloadJson(`SIH26231-evidence-${current.id}.json`, evidencePayload(current, current.seal))}>
-            Export verifiable evidence package
-          </button>
-          <button className="primary" onClick={() => setPage("log")}>
-            Searchable log
-          </button>
-        </>
-      )}
-
-      {page === "log" && (
-        <LogScreen
-          query={query}
-          onQuery={setQuery}
-          records={records}
-          onOpen={(r) => {
-            setCurrent(r)
-            setDebug("")
-            setSealVerified(null)
-            setPage("record")
-          }}
-          onNew={() => (officerId ? setPage("capture") : setPage("login"))}
-        />
-      )}
-    </div>
-  )
+  return <main className="app"><Header page={page} onLog={() => setPage("log")} />
+    {page === "login" && <section className="welcome"><div className="eyebrow">NCB field companion</div><h1>Make every field test clear, consistent, and traceable.</h1><p className="lead">Use your existing colour-change kit. FieldSeal calibrates the photo with a reference card, makes a presumptive call, and seals the observation.</p><Banner /><div className="how-it-works"><div><b>1</b><span>Frame kit and card</span></div><div><b>2</b><span>Review the call</span></div><div><b>3</b><span>Seal the record</span></div></div><div className="card login-card"><label htmlFor="oid">Officer / operator identifier</label><input id="oid" value={draftId} onChange={(e) => setDraftId(e.target.value)} placeholder="e.g. NCB-DEMO-01" autoComplete="off" /><p className="field-help">Used only to identify who captured this field record.</p></div><button className="primary" onClick={enter} disabled={!draftId.trim()}>Start a field test <span>→</span></button><button className="ghost" onClick={() => setPage("log")}>Open existing test log</button></section>}
+    {page === "capture" && <><Workflow active="capture" /><CaptureScreen officerId={officerId} shotId={shotId} onShotId={setShotId} onCaptured={afterCapture} onLog={() => setPage("log")} /></>}
+    {page === "result" && current && <><Workflow active="result" /><section className="result-screen"><div className="eyebrow">Field result</div><div className={`result-panel ${current.result}`}><span className="result-icon">{current.result === "positive" ? "+" : current.result === "negative" ? "−" : "!"}</span><div><h1>{RESULT_COPY[current.result][0]}</h1><p>{RESULT_COPY[current.result][1]}</p></div></div><Banner /><img className="evidence-photo" src={current.imageDataUrl} alt="Captured field-test image" /><div className="quality-card"><div><span>Capture quality</span><strong>{current.flags.length ? "Needs review" : "Ready to seal"}</strong></div><div><span>Colour confidence</span><strong>{analysis.confidence ? `${analysis.confidence} · ${analysis.confidenceScore}/100` : "Recorded"}</strong></div></div>{current.flags.length ? <p className="quality-warning">Why: {current.flags.join(", ").replaceAll("_", " ")}. {RESULT_COPY.inconclusive[2]}</p> : <p className="next-step">{RESULT_COPY[current.result][2]}</p>}<button className="primary" onClick={() => setPage("record")}>Review sealed record <span>→</span></button><button className="ghost" onClick={() => setPage("capture")}>Retake photo</button><details className="technical-details"><summary>Technical capture details</summary><p>Calibration: {current.method}. SHA-256 is computed from the captured JPEG bytes.</p><pre>{debug}</pre></details>{shotId ? <details className="technical-details"><summary>Calibration study export</summary><button className="ghost" onClick={() => { const name = shotId; downloadDataUrl(`${name}.jpg`, current.imageDataUrl); downloadJson(`${name}.json`, { shotId: name, result: current.result, method: current.method, flags: current.flags, debug: analysis }); setShotId("") }}>Download this calibration sample</button></details> : null}</section></>}
+    {page === "record" && current && <><Workflow active="record" /><section><div className="eyebrow">Evidence record</div><h1>Field observation sealed</h1><Banner /><div className="seal-status"><span>✓</span><div><strong>Image and record metadata are protected</strong><p>A digital signature detects later changes to this record.</p></div></div><div className="record-grid"><Field label="Officer" value={current.officerId} /><Field label="Captured (UTC)" value={current.capturedAt.replace("T", " ").replace("Z", " UTC")} /><Field label="Location" value={current.lat != null && current.lon != null ? `${current.lat.toFixed(5)}, ${current.lon.toFixed(5)} ±${current.gpsAccuracyM ?? "?"} m` : "Location unavailable"} /><Field label="Field call" value={<span className={`chip ${current.result}`}>{current.result}</span>} /><Field label="Image fingerprint (SHA-256)" value={<span className="mono">{current.sha256Hex}</span>} full /><Field label="Signature" value={current.seal ? `P-256 · device key ${current.seal.keyId}` : "Legacy record — unsigned"} full /></div>{sealVerified != null ? <p className={sealVerified ? "seal-ok" : "seal-bad"}>{sealVerified ? "✓ Signature verified. The sealed data has not changed." : "✕ Verification failed — do not rely on this record."}</p> : null}<button className="primary" onClick={() => void verifyRecordSeal(current, current.seal).then(setSealVerified)}>Verify sealed record</button><button className="ghost" onClick={() => downloadJson(`SIH26231-evidence-${current.id}.json`, evidencePayload(current, current.seal))}>Export evidence package</button><button className="ghost" onClick={() => setPage("log")}>View test log</button><details className="technical-details"><summary>Demonstrate tamper detection</summary><p>For the demo only: simulate changing one byte in the captured image.</p><button className="ghost" onClick={() => void proveHashMoves()}>Simulate image change</button>{flippedHash ? <p className="mono hash-flip">Changed-image hash: {flippedHash}</p> : null}</details></section></>}
+    {page === "log" && <LogScreen query={query} onQuery={setQuery} records={records} onOpen={(r) => { setCurrent(r); setDebug(""); setSealVerified(null); setPage("record") }} onNew={() => setPage(officerId ? "capture" : "login")} />}
+  </main>
 }
 
-function LogScreen(props: {
-  query: string
-  onQuery: (q: string) => void
-  records: TestRecord[]
-  onOpen: (r: TestRecord) => void
-  onNew: () => void
-}) {
-  const q = props.query.trim().toLowerCase()
-  const rows = props.records.filter((r) => {
-    if (!q) return true
-    return (
-      r.officerId.toLowerCase().includes(q) ||
-      r.result.includes(q) ||
-      r.sha256Hex.includes(q)
-    )
-  })
-  return (
-    <>
-      <p className="kicker">Log</p>
-      <h1>Search tests</h1>
-      <input
-        value={props.query}
-        onChange={(e) => props.onQuery(e.target.value)}
-        placeholder="officer ID, result, or hash"
-      />
-      <div className="list">
-        {rows.length === 0 ? <p className="muted">No records yet.</p> : null}
-        {rows.map((r) => (
-          <button key={r.id} className="item" onClick={() => props.onOpen(r)}>
-            <strong className={`chip ${r.result}`}>{r.result}</strong>
-            <div className="muted">
-              {r.officerId} · {r.capturedAt.replace("T", " ").slice(0, 19)}
-            </div>
-            <div className="mono">{r.sha256Hex.slice(0, 20)}…</div>
-          </button>
-        ))}
-      </div>
-      <button className="primary" onClick={props.onNew}>
-        New capture
-      </button>
-    </>
-  )
-}
+function Field({ label, value, full = false }: { label: string; value: ReactNode; full?: boolean }) { return <div className={full ? "record-field full" : "record-field"}><span>{label}</span><strong>{value}</strong></div> }
+function LogScreen(props: { query: string; onQuery: (q: string) => void; records: TestRecord[]; onOpen: (r: TestRecord) => void; onNew: () => void }) { const q = props.query.trim().toLowerCase(); const rows = props.records.filter((r) => !q || r.officerId.toLowerCase().includes(q) || r.result.includes(q) || r.sha256Hex.includes(q)); return <section><div className="eyebrow">Secure local log</div><h1>Test records</h1><p className="lead small">Search by officer ID, field call, or image fingerprint.</p><input value={props.query} onChange={(e) => props.onQuery(e.target.value)} placeholder="Search records" aria-label="Search test records" /><div className="list">{rows.length === 0 ? <div className="empty-state">No matching records.</div> : rows.map((r) => <button key={r.id} className="item" onClick={() => props.onOpen(r)}><strong className={`chip ${r.result}`}>{r.result}</strong><div><b>{r.officerId}</b><span>{r.capturedAt.replace("T", " ").slice(0, 19)} UTC</span></div><span className="item-arrow">→</span></button>)}</div><button className="primary" onClick={props.onNew}>New field test <span>→</span></button></section> }
