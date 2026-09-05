@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest"
-import { CARD_SRGB, defaultClassLabs } from "./card"
+import { CARD_SRGB, NEGATIVE_SRGB, POSITIVE_SRGB, defaultClassLabs } from "./card"
 import { classifyImage } from "./classify"
 import { DEFAULT_LAYOUT } from "./constants"
 import { rgb8ToHsv } from "./hsv"
+import { describeKitColour, nameLab } from "./names"
 import { deltaE76, rgb8ToLab, srgb8ToLinear } from "./srgb"
 import { fitCcm, intendedPatchXyz, vonKries } from "./ccm"
 import { rgb8ToLinear } from "./srgb"
@@ -73,8 +74,10 @@ describe("HSV", () => {
 
 describe("CCM identity", () => {
   it("recovers the sRGB→XYZ map when the card is perfect", () => {
-    const observed = Object.values(CARD_SRGB)
-    const target = Object.values(intendedPatchXyz())
+    const ids = ["white", "black", "gray", "red", "yellow", "purple"] as const
+    const observed = ids.map((id) => CARD_SRGB[id])
+    const xyz = intendedPatchXyz()
+    const target = ids.map((id) => xyz[id])
     const fit = fitCcm(observed, target)
     expect(fit).not.toBeNull()
     expect(fit!.residualRms).toBeLessThan(1e-6)
@@ -92,20 +95,53 @@ describe("von Kries", () => {
   })
 })
 
+describe("colour names", () => {
+  it("names the daylight swatches", () => {
+    expect(nameLab(rgb8ToLab(CARD_SRGB.black)).id).toBe("black")
+    expect(nameLab(rgb8ToLab(CARD_SRGB.red)).id).toBe("red")
+    expect(nameLab(rgb8ToLab(CARD_SRGB.yellow)).id).toBe("yellow")
+    expect(nameLab(rgb8ToLab(CARD_SRGB.white)).id).toBe("white")
+    expect(nameLab(rgb8ToLab(POSITIVE_SRGB)).id).toBe("magenta")
+    expect(nameLab(rgb8ToLab(NEGATIVE_SRGB)).id).toBe("white")
+  })
+
+  it("compares magenta to the expected positive colour", () => {
+    const info = describeKitColour(rgb8ToLab(POSITIVE_SRGB), defaultClassLabs())
+    expect(info.label).toBe("MAGENTA")
+    expect(info.vsExpected).toBe("positive")
+  })
+})
+
 describe("classifyImage", () => {
-  it("calls a purple kit positive when the card is in frame", () => {
-    const out = classifyImage(syntheticFrame(CARD_SRGB.purple))
+  it("calls a magenta kit positive when the card is in frame", () => {
+    const out = classifyImage(syntheticFrame(POSITIVE_SRGB))
     expect(out.result).toBe("positive")
     expect(out.presumptive).toBe(true)
     expect(out.debug.method).toBe("ccm")
     expect(out.debug.confidence).toBe("high")
     expect(out.debug.confidenceScore).toBeGreaterThanOrEqual(75)
+    expect(out.debug.kitColour.label).toBe("MAGENTA")
+    expect(out.debug.kitColour.vsExpected).toBe("positive")
   })
 
-  it("calls a pale kit negative", () => {
-    const pale = { r: 230, g: 228, b: 220 }
-    const out = classifyImage(syntheticFrame(pale))
+  it("calls a pale kit negative and names it white", () => {
+    const out = classifyImage(syntheticFrame(NEGATIVE_SRGB))
     expect(out.result).toBe("negative")
+    expect(out.debug.kitColour.id).toBe("white")
+    expect(out.debug.kitColour.vsExpected).toBe("negative")
+  })
+
+  it("names a black kit black and does not call it positive", () => {
+    const out = classifyImage(syntheticFrame(CARD_SRGB.black))
+    expect(out.debug.kitColour.label).toBe("BLACK")
+    expect(out.debug.kitColour.vsExpected).toBe("neither")
+    expect(out.result).not.toBe("positive")
+  })
+
+  it("names a red kit red", () => {
+    const out = classifyImage(syntheticFrame(CARD_SRGB.red))
+    expect(out.debug.kitColour.label).toBe("RED")
+    expect(out.result).not.toBe("positive")
   })
 
   it("refuses when the card is missing (flat gray frame)", () => {

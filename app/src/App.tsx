@@ -198,6 +198,15 @@ export default function App() {
           <h1>Photo sealed</h1>
           <Banner />
           <div className={`chip ${current.result}`}>{current.result}</div>
+          {current.debug?.kitColour ? (
+            <p className="muted" style={{ marginTop: "0.35rem" }}>
+              Kit colour <strong>{current.debug.kitColour.label}</strong>
+              {" · "}
+              {current.debug.kitColour.vsExpected === "neither"
+                ? `not ${current.debug.kitColour.expectedPositive} or ${current.debug.kitColour.expectedNegative}`
+                : `matches ${current.debug.kitColour.vsExpected}`}
+            </p>
+          ) : null}
           <div className="card facts">
             <div>
               <span>Officer</span>
@@ -206,6 +215,10 @@ export default function App() {
             <div>
               <span>Time (UTC)</span>
               <strong>{current.capturedAt.replace("T", " ").slice(0, 19)}</strong>
+            </div>
+            <div>
+              <span>Observed colour</span>
+              <strong>{current.debug?.kitColour?.label ?? "—"}</strong>
             </div>
             <div>
               <span>GPS</span>
@@ -307,7 +320,12 @@ function LogScreen(props: {
   const q = props.query.trim().toLowerCase()
   const rows = props.records.filter((r) => {
     if (!q) return true
-    return r.officerId.toLowerCase().includes(q) || r.result.includes(q) || r.sha256Hex.includes(q)
+    return (
+      r.officerId.toLowerCase().includes(q) ||
+      r.result.includes(q) ||
+      r.sha256Hex.includes(q) ||
+      (r.debug?.kitColour?.label.toLowerCase().includes(q) ?? false)
+    )
   })
   return (
     <>
@@ -319,19 +337,22 @@ function LogScreen(props: {
         </span>
       </div>
       <label className="log-search-label" htmlFor="log-search">
-        Search by officer ID, result, or hash
+        Search by officer ID, result, colour, or hash
       </label>
       <input
         id="log-search"
         value={props.query}
         onChange={(e) => props.onQuery(e.target.value)}
-        placeholder="officer ID, result, or hash"
+        placeholder="officer ID, result, colour, or hash"
       />
       <div className="list">
         {rows.length === 0 ? <p className="muted">No records yet.</p> : null}
         {rows.map((r) => (
           <button key={r.id} className="item" onClick={() => props.onOpen(r)}>
             <strong className={`chip ${r.result}`}>{r.result}</strong>
+            {r.debug?.kitColour ? (
+              <div className="muted">{r.debug.kitColour.label}</div>
+            ) : null}
             <div className="muted">
               {r.officerId} · {r.capturedAt.replace("T", " ").slice(0, 19)}
             </div>

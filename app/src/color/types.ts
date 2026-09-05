@@ -29,6 +29,15 @@ export type Layout = {
 
 export type ResultLabel = "positive" | "negative" | "inconclusive"
 
+export type KitColourInfo = {
+  id: string
+  label: string
+  deltaE: number
+  expectedPositive: string
+  expectedNegative: string
+  vsExpected: "positive" | "negative" | "neither"
+}
+
 export type QualityFlag =
   | "card_missing"
   | "patch_too_small"
@@ -72,6 +81,8 @@ export type ClassifyDebug = {
   /** Conservative, explainable confidence in calibration and class separation. */
   confidence: "high" | "moderate" | "low"
   confidenceScore: number
+  /** Nearest named colour of the kit after lighting correction. */
+  kitColour: KitColourInfo
 }
 
 export type ClassifyOutput = {

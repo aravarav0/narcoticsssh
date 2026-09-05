@@ -1,4 +1,5 @@
 import { CARD_SRGB, PATCH_ORDER, defaultClassLabs } from "./card"
+import { describeKitColour } from "./names"
 import { applyCcm, fitCcm, intendedPatchXyz, vonKries } from "./ccm"
 import { DEFAULT_LAYOUT, THRESHOLDS } from "./constants"
 import { rgb8ToHsv } from "./hsv"
@@ -147,6 +148,7 @@ export function classifyImage(
       ccmResidual: ccm?.residualRms ?? null,
       confidence,
       confidenceScore,
+      kitColour: describeKitColour(kitLab, classLabs),
     },
   }
 }

@@ -2,8 +2,8 @@ import { CARD_SRGB, PATCH_ORDER, defaultClassLabs } from "../color/card"
 import { DEFAULT_LAYOUT } from "../color/constants"
 import type { Lab, PatchId, Rgb8 } from "../color/types"
 
-const PRINT_KEY = "sih26231.printRunRgb"
-const CLASS_KEY = "sih26231.classLabs"
+const PRINT_KEY = "sih26231.v2.printRunRgb"
+const CLASS_KEY = "sih26231.v2.classLabs"
 
 export type ClassLabs = { negative: Lab; positive: Lab; muddy: Lab }
 

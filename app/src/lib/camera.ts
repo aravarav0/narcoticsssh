@@ -11,30 +11,58 @@ export async function tryLockCamera(track: MediaStreamTrack) {
 
 async function getStream(video: boolean | MediaTrackConstraints): Promise<MediaStream> {
   if (!navigator.mediaDevices?.getUserMedia) {
-    throw new Error("Camera API missing. Open this page in Safari over https://, or use Take photo.")
+    throw new Error("Camera API missing. Use Chrome/Edge on http://localhost, or Take photo.")
   }
   return navigator.mediaDevices.getUserMedia({ audio: false, video })
 }
 
-/** Rear camera when possible. Falls back for iPhone Safari constraint quirks. */
+function isPhone() {
+  return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+}
+
+function isIrCamera(label: string) {
+  return /\bir\b|infrared|windows hello|rgb.?ir/i.test(label)
+}
+
+async function preferredDeviceId(): Promise<string | undefined> {
+  const cams = (await navigator.mediaDevices.enumerateDevices()).filter((d) => d.kind === "videoinput")
+  const rgb = cams.filter((d) => !isIrCamera(d.label))
+  const pool = rgb.length ? rgb : cams
+  if (isPhone()) {
+    const back = pool.find((d) => /back|rear|environment/i.test(d.label))
+    return (back ?? pool[0])?.deviceId
+  }
+  return pool[0]?.deviceId
+}
+
+/** RGB webcam on laptops (skip Windows Hello IR). Rear camera on phones. */
 export async function openRearCamera(): Promise<MediaStream> {
-  const attempts: Array<boolean | MediaTrackConstraints> = [
-    { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } },
-    { facingMode: { ideal: "environment" } },
-    true,
-  ]
+  const phone = isPhone()
+  const first: MediaTrackConstraints = phone
+    ? { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }
+    : { facingMode: { ideal: "user" }, width: { ideal: 1280 }, height: { ideal: 720 } }
+  const attempts: Array<boolean | MediaTrackConstraints> = [first, true]
   let last: unknown
+  let stream: MediaStream | null = null
   for (const video of attempts) {
     try {
-      const stream = await getStream(video)
-      const track = stream.getVideoTracks()[0]
-      if (track) await tryLockCamera(track)
-      return stream
+      stream = await getStream(video)
+      break
     } catch (err) {
       last = err
     }
   }
-  throw last instanceof Error ? last : new Error("Camera blocked")
+  if (!stream) throw last instanceof Error ? last : new Error("Camera blocked")
+
+  const label = stream.getVideoTracks()[0]?.label ?? ""
+  if (isIrCamera(label) || !label) {
+    const id = await preferredDeviceId()
+    if (id && id !== stream.getVideoTracks()[0]?.getSettings().deviceId) {
+      stream.getTracks().forEach((t) => t.stop())
+      stream = await getStream({ deviceId: { exact: id } })
+    }
+  }
+  return stream
 }
 
 export function blobToDataUrl(blob: Blob): Promise<string> {

@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react"
 import type { ClassifyDebug, QualityFlag, ResultLabel } from "../color/types"
-import { closenessPct, explainCall, FLAG_SHORT } from "../lib/explain"
+import { closenessPct, explainCall, FLAG_SHORT, rgbCss } from "../lib/explain"
 import {
   benchmarkStatus,
   clearBenchmarks,
@@ -83,6 +83,26 @@ export function ResultView(props: {
             <div className="hero-word">{props.result}</div>
           </div>
         </div>
+        {props.debug?.kitColour && (
+          <div className="hero-colour">
+            <span
+              className="hero-swatch"
+              style={{ background: rgbCss(props.debug.kitRgb) }}
+              aria-hidden="true"
+            />
+            <div>
+              <div className="hero-colour-kicker">Kit colour</div>
+              <div className="hero-colour-name">{props.debug.kitColour.label}</div>
+              <p className={`hero-colour-match ${props.debug.kitColour.vsExpected}`}>
+                {props.debug.kitColour.vsExpected === "positive"
+                  ? `Matches POSITIVE (${props.debug.kitColour.expectedPositive})`
+                  : props.debug.kitColour.vsExpected === "negative"
+                    ? `Matches NEGATIVE (${props.debug.kitColour.expectedNegative})`
+                    : `Not ${props.debug.kitColour.expectedPositive} or ${props.debug.kitColour.expectedNegative}`}
+              </p>
+            </div>
+          </div>
+        )}
         <p className="hero-why">
           {explained?.headline ?? "No colour debug attached. Recapture to see why."}
         </p>
@@ -103,8 +123,18 @@ export function ResultView(props: {
             Taller/longer bar = closer colour match. ΔE is the technical distance value — lower is
             closer.
           </p>
-          <Meter label="Positive · purple" value={d.positive} tone="positive" isWinner={winner === "positive"} />
-          <Meter label="Negative · pale" value={d.negative} tone="negative" isWinner={winner === "negative"} />
+          <Meter
+            label={`Positive · ${props.debug?.kitColour?.expectedPositive ?? "magenta"}`}
+            value={d.positive}
+            tone="positive"
+            isWinner={winner === "positive"}
+          />
+          <Meter
+            label={`Negative · ${props.debug?.kitColour?.expectedNegative ?? "white"}`}
+            value={d.negative}
+            tone="negative"
+            isWinner={winner === "negative"}
+          />
           <Meter label="Muddy · mixed" value={d.muddy} tone="inconclusive" isWinner={winner === "inconclusive"} />
         </div>
       )}
@@ -124,9 +154,10 @@ export function ResultView(props: {
 
       {props.debug && (
         <div className="demo-card">
-          <div className="demo-card-title">Set benchmark (your printer / your purple)</div>
+          <div className="demo-card-title">Set benchmark (your sheets / lighting)</div>
           <p className="muted">
-            Do this once. Fill each labelled box, then save. Card saved: {bench.card ? "yes" : "not yet"}.
+            Defaults are the daylight craft-sheet card plus magenta (positive) and white (negative).
+            Override here if the lamp changes. Card saved: {bench.card ? "yes" : "not yet"}.
             Kit colours saved: {bench.classes ? "yes" : "not yet"}.
           </p>
           <button
@@ -142,28 +173,28 @@ export function ResultView(props: {
             className="ghost"
             onClick={() => {
               setPositiveLab(props.debug!.kitLab)
-              setBenchNote("Saved this kit colour as POSITIVE. Next purple shot should call positive.")
+              setBenchNote("Saved this kit colour as POSITIVE. Next magenta (or this colour) should call positive.")
             }}
           >
-            2 · This kit is my POSITIVE (purple)
+            2 · This kit is my POSITIVE
           </button>
           <button
             className="ghost"
             onClick={() => {
               setNegativeLab(props.debug!.kitLab)
-              setBenchNote("Saved this kit colour as NEGATIVE (pale).")
+              setBenchNote("Saved this kit colour as NEGATIVE (white / unused).")
             }}
           >
-            3 · This kit is my NEGATIVE (pale)
+            3 · This kit is my NEGATIVE (white)
           </button>
           <button
             className="ghost"
             onClick={() => {
               clearBenchmarks()
-              setBenchNote("Cleared. Back to factory purple / pale.")
+              setBenchNote("Cleared. Back to daylight magenta / white defaults.")
             }}
           >
-            Reset to factory colours
+            Reset to daylight defaults
           </button>
           {benchNote ? <p className="muted">{benchNote}</p> : null}
         </div>

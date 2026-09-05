@@ -20,14 +20,33 @@ function phoneHttpsUrl() {
 }
 
 function cameraErrorMessage(err: unknown) {
-  if (!window.isSecureContext) {
-    return "Safari blocks live camera on http://. Open the https:// iPhone link, or tap Take photo."
-  }
   const msg = err instanceof Error ? err.message : ""
   if (/NotAllowed|Permission|denied/i.test(msg)) {
-    return "Camera permission denied. In Safari: aA → Website Settings → Camera → Allow. Or tap Take photo."
+    return "Camera permission denied. In the address bar click the camera icon → Allow. Close Zoom/Teams and other localhost tabs."
   }
-  return "Live camera unavailable. Tap Take photo — that uses the iPhone camera."
+  if (/NotReadable|in use|TrackStart|Could not start/i.test(msg)) {
+    return "Camera is on but another app or browser tab is using it. Close those, then tap Enable camera."
+  }
+  return "Live preview failed. Close other tabs using the camera, then tap Enable camera — or use Take photo."
+}
+
+async function attachStream(video: HTMLVideoElement, stream: MediaStream) {
+  video.setAttribute("playsinline", "true")
+  video.setAttribute("webkit-playsinline", "true")
+  video.muted = true
+  video.autoplay = true
+  video.srcObject = stream
+  if (video.readyState < 2) {
+    await new Promise<void>((resolve) => {
+      video.onloadedmetadata = () => resolve()
+      window.setTimeout(() => resolve(), 1500)
+    })
+  }
+  try {
+    await video.play()
+  } catch {
+    /* autoplay can wait for Enable camera */
+  }
 }
 
 function drawCover(
@@ -85,12 +104,7 @@ export function CaptureScreen(props: {
       streamRef.current?.getTracks().forEach((t) => t.stop())
       streamRef.current = stream
       const video = videoRef.current
-      if (video) {
-        video.setAttribute("playsinline", "true")
-        video.setAttribute("webkit-playsinline", "true")
-        video.srcObject = stream
-        await video.play()
-      }
+      if (video) await attachStream(video, stream)
     } catch (err) {
       setError(cameraErrorMessage(err))
     }
@@ -108,12 +122,7 @@ export function CaptureScreen(props: {
         streamRef.current?.getTracks().forEach((t) => t.stop())
         streamRef.current = stream
         const video = videoRef.current
-        if (video) {
-          video.setAttribute("playsinline", "true")
-          video.setAttribute("webkit-playsinline", "true")
-          video.srcObject = stream
-          await video.play()
-        }
+        if (video) await attachStream(video, stream)
       } catch (err) {
         if (!cancelled) setError(cameraErrorMessage(err))
       }
@@ -199,7 +208,7 @@ export function CaptureScreen(props: {
     }
   }
 
-  async function loadDemo(name: "demo-positive.png" | "demo-negative.png") {
+  async function loadDemo(name: "demo-positive.png" | "demo-negative.png" | "demo-black.png") {
     const img = await loadImage(`/${name}`)
     await fromSource(img, img.naturalWidth, img.naturalHeight)
   }
@@ -209,8 +218,10 @@ export function CaptureScreen(props: {
       <p className="kicker">SIH26231 · capture</p>
       <h1>Hold the pocket card under the kit.</h1>
       <p className="muted">
-        One card, one photo. Fill the white <strong>FILL KIT</strong> box with the test square only —
-        not your face. Fill each gold box with that colour. Tilt to kill glare.
+        One card, one photo. Fill <strong>FILL KIT</strong> with the test square — the app names
+        that colour (black, red, magenta, white, …) and compares it to this dummy test:{" "}
+        <strong>magenta = positive</strong>, <strong>white = negative</strong>. Fill each gold box
+        with that card square. Daylight card is the default. Tilt to kill glare.
       </p>
       <div className="stage" ref={stageRef}>
         <video ref={videoRef} className={mirror ? "mirrored" : undefined} playsInline autoPlay muted />
@@ -231,14 +242,10 @@ export function CaptureScreen(props: {
           </div>
         ) : null}
       </div>
-      {error ? (
-        <>
-          <p className="error">{error}</p>
-          <button className="ghost" onClick={() => void startCamera()} disabled={busy}>
-            Enable camera
-          </button>
-        </>
-      ) : null}
+      {error ? <p className="error">{error}</p> : null}
+      <button className="ghost" onClick={() => void startCamera()} disabled={busy}>
+        Enable camera
+      </button>
       <button className="primary" onClick={() => void snap()} disabled={busy}>
         {busy ? "Reading colour…" : "Capture & classify"}
       </button>
@@ -256,10 +263,13 @@ export function CaptureScreen(props: {
         <div className="demo-card-title">Demo (no camera or card needed)</div>
         <div className="row">
           <button className="ghost" onClick={() => void loadDemo("demo-positive.png")} disabled={busy}>
-            Demo positive
+            Demo magenta (+)
           </button>
           <button className="ghost" onClick={() => void loadDemo("demo-negative.png")} disabled={busy}>
-            Demo negative
+            Demo white (−)
+          </button>
+          <button className="ghost" onClick={() => void loadDemo("demo-black.png")} disabled={busy}>
+            Demo black
           </button>
         </div>
       </div>
