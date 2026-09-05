@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SIH26231 — 6 person plan</title>
+  <style>
+    :root {
+      --bg: #111; --card: #1c1c1c; --text: #eee; --muted: #9a9a9a;
+      --line: #333; --accent: #6ea8ff;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Georgia, "Times New Roman", serif; background: var(--bg); color: var(--text); line-height: 1.55; }
+    main { max-width: 48rem; margin: 0 auto; padding: 2.4rem 1.2rem 4.2rem; }
+    h1 { font-size: 1.7rem; line-height: 1.25; margin: 0 0 0.45rem; }
+    h2 { font-size: 1.2rem; margin: 2.1rem 0 0.55rem; }
+    h3 { font-size: 1.05rem; margin: 1.1rem 0 0.35rem; }
+    p, li, td { font-size: 1.04rem; }
+    .muted { color: var(--muted); }
+    .box {
+      background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+      padding: 1rem 1.1rem; margin: 0.85rem 0;
+    }
+    .id { font-family: ui-monospace, Consolas, monospace; color: var(--accent); }
+    table { width: 100%; border-collapse: collapse; margin: 0.7rem 0 1.15rem; font-size: 0.92rem; }
+    th, td { text-align: left; vertical-align: top; padding: 0.5rem 0.4rem; border-bottom: 1px solid var(--line); }
+    th { color: var(--muted); font-family: system-ui, sans-serif; font-size: 0.76rem; }
+    ul, ol { margin: 0.3rem 0 0.55rem; padding-left: 1.2rem; }
+    code { font-family: ui-monospace, Consolas, monospace; font-size: 0.9em; color: var(--accent); }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="muted">SIH26231 · NCB field-test companion · write names into the six seats tonight</p>
+    <h1>Team plan: six people, one finishable app</h1>
+    <p>
+      You are tech lead. Two teammates are strong humans who will research with Claude and run the physical demo — they are not “less important.”
+      Three can write a bit of code / poke AI tools. Nobody trains a neural net. Colour math + a sealed photo is the product.
+    </p>
+    <div class="box">
+      <strong>App we ship (maps 1:1 to the official four bullets)</strong>
+      <ol>
+        <li>Camera screen: vial + colour card must both be in the photo</li>
+        <li>Result: Positive / Negative / Inconclusive</li>
+        <li>Record: time, GPS, officer ID, SHA-256 of the image</li>
+        <li>Log: list you can search</li>
+      </ol>
+      Big banner on every result: <em>Presumptive only — does not replace lab confirmation.</em>
+      Demo kit = pH strips / food colouring / printed circles. Label it simulated.
+    </div>
+
+    <h2>The six seats (put real names in)</h2>
+    <table>
+      <thead>
+        <tr><th>Seat</th><th>Who</th><th>Job in one line</th><th>Does not do</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Lead</strong> — you</td>
+          <td>Most app experience</td>
+          <td>Repo, architecture, camera capture, merge everyone, make it run on a phone/laptop at 10am</td>
+          <td>Write the whole PPT. Print the card. Disappear into a custom ML model</td>
+        </tr>
+        <tr>
+          <td><strong>Field</strong></td>
+          <td>Human, Claude for research</td>
+          <td>Physical world: print the colour card, stage the fake kit, take 30 photos under different lamps, run the live demo</td>
+          <td>Pretend to code. You are the reason the demo is real</td>
+        </tr>
+        <tr>
+          <td><strong>Story</strong></td>
+          <td>Human, Claude for research</td>
+          <td>Official PS language, PPT, 3-minute script, “why inconclusive is smart,” paper one-pagers for judges</td>
+          <td>Invent extra features. Keep us glued to the four NCB bullets</td>
+        </tr>
+        <tr>
+          <td><strong>Colour</strong></td>
+          <td>A bit of AI/coding</td>
+          <td>The brain: linearise RGB, use the card, compute hue/sat/Lab, ΔE, decide pos/neg/inconclusive</td>
+          <td>Train a CNN. If Claude writes OpenCV/JS, you still have to test on Field’s photos</td>
+        </tr>
+        <tr>
+          <td><strong>Seal</strong></td>
+          <td>A bit of AI/coding</td>
+          <td>The wax seal: officer ID, GPS, timestamp, SHA-256, save/search records</td>
+          <td>Blockchain. SHA-256 + JSON is enough</td>
+        </tr>
+        <tr>
+          <td><strong>Screens</strong></td>
+          <td>A bit of AI/coding</td>
+          <td>What judges click: login, result chip, record page, log + search, huge type, ugly-proof</td>
+          <td>A 40-screen design system. Four screens, done</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>What “done” means (MVP)</h2>
+    <p>If this works at 10am, we are in the game. Anything else is bonus.</p>
+    <table>
+      <thead><tr><th>#</th><th>Task</th><th>Owner</th><th>Done when</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Empty app running (local)</td><td>Lead</td><td>Camera page opens, no crash</td></tr>
+        <tr><td>2</td><td>Colour card printed + fake kit</td><td>Field</td><td>Card has white, black, gray, red, purple; vial or pH strip ready</td></tr>
+        <tr><td>3</td><td>Capture with overlay “card here / kit here”</td><td>Lead + Screens</td><td>Photo includes both; reject if card not found (even a manual checkbox is ok at first)</td></tr>
+        <tr><td>4</td><td>Classify colour</td><td>Colour</td><td>Same strip under yellow lamp vs white lamp, with card, stays the same call</td></tr>
+        <tr><td>5</td><td>Inconclusive path</td><td>Colour + Screens</td><td>Cover the card or shine glare → app refuses to guess</td></tr>
+        <tr><td>6</td><td>Seal the record</td><td>Seal</td><td>Page shows time, map/lat-long, officer id, hash; change one pixel of a copy → hash changes (show that live)</td></tr>
+        <tr><td>7</td><td>Searchable log</td><td>Seal + Screens</td><td>Filter by officer or result</td></tr>
+        <tr><td>8</td><td>Presumptive banner</td><td>Story + Screens</td><td>Cannot miss it</td></tr>
+        <tr><td>9</td><td>PPT + 3 min demo script</td><td>Story</td><td>Four official bullets, each with a screenshot</td></tr>
+        <tr><td>10</td><td>Yellow-lamp theatre</td><td>Field + Lead</td><td>Without card it gets dumber; with card it holds. Judges go “oh”</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Stack (Lead decides, everyone follows)</h2>
+    <p>
+      Fastest for this team: a <strong>web app</strong> (Vite + React or Next) on a laptop, phone browser for camera.
+      No Play Store. Images stay in the browser (<code>localStorage</code> / IndexedDB). Hash with Web Crypto.
+      GPS with the browser geolocation prompt. Colour math in JavaScript (or a tiny Python script Colour runs locally if they prefer — Lead must still get the number onto the result screen).
+    </p>
+    <p class="muted">If Lead already thinks in Flutter/React Native, fine — but do not start a new stack at 1am.</p>
+
+    <h2>Before 10pm Saturday (do this Friday night / Saturday)</h2>
+    <table>
+      <thead><tr><th>Who</th><th>Tonight / tomorrow day</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Lead</td>
+          <td>GitHub repo. Four empty routes: Capture, Result, Record, Log. Camera permission working. WhatsApp group: “merge only through me.”</td>
+        </tr>
+        <tr>
+          <td>Field</td>
+          <td>Print colour card (ask Claude: “6 patches: white, black, 18% gray, red, yellow, purple, 4cm squares, how to print”). Buy pH strips / food colour / small clear vial. Desk lamp. Tape. Power bank.</td>
+        </tr>
+        <tr>
+          <td>Story</td>
+          <td>Read <code>SIH26231-team-brief.html</code>. PPT skeleton: Background → 4 features → demo → presumptive. Claude prompt: “Summarise Burggraaff 2020 smartphone colorimetry in 8 bullets for a hackathon slide.” Do not paste a wall of papers.</td>
+        </tr>
+        <tr>
+          <td>Colour</td>
+          <td>Read the ratios table in the team brief. Claude: “JS function: sRGB to linear, von Kries using a gray patch, RGB to HSV and Lab, ΔE76.” Save it. Test on one sample photo.</td>
+        </tr>
+        <tr>
+          <td>Seal</td>
+          <td>Claude: “Browser Web Crypto SHA-256 of an image file, plus geolocation JSON shape.” Prove hash changes when you edit the file in Paint.</td>
+        </tr>
+        <tr>
+          <td>Screens</td>
+          <td>Draw four screens on paper. Big result word. Huge type (elderly-officer energy). Get Lead’s component names so you are not inventing a second app.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>12-hour sprint clock (5 Sep 10pm → 6 Sep 10am)</h2>
+    <table>
+      <thead><tr><th>When</th><th>Everyone</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>10:00–10:30</td>
+          <td>Names on this sheet. Feature freeze: the ten “done” rows only. Lead assigns Git branches: <code>colour</code>, <code>seal</code>, <code>screens</code>.</td>
+        </tr>
+        <tr>
+          <td>10:30–1:00</td>
+          <td>
+            Lead: capture + overlay.<br />
+            Colour: plug math into a function <code>classify(image, cardBoxes)</code>.<br />
+            Seal: saveRecord() + hash.<br />
+            Screens: static pages with fake data.<br />
+            Field: 30 labelled photos (pos/neg/muddy × 3 lights).<br />
+            Story: slides 1–6, no animation.
+          </td>
+        </tr>
+        <tr>
+          <td>1:00–1:20</td>
+          <td>Standup. If colour is not returning a string yet, Lead hard-codes a fake classify and Colour keeps going — UI must not wait.</td>
+        </tr>
+        <tr>
+          <td>1:20–4:00</td>
+          <td>Wire real photo → classify → record → log. Field tries to break it (no card, glare, yellow lamp). Story writes the demo script word-for-word.</td>
+        </tr>
+        <tr>
+          <td>4:00–4:20</td>
+          <td>Eat. Do not add features.</td>
+        </tr>
+        <tr>
+          <td>4:20–7:00</td>
+          <td>Polish: inconclusive, banner, search box, hash theatre. Story + Screens: screenshot every official bullet. Field rehearses the lamp trick twice.</td>
+        </tr>
+        <tr>
+          <td>7:00–8:30</td>
+          <td>Full dry run as if judges are there. Time it. Cut anything that is not in the four bullets.</td>
+        </tr>
+        <tr>
+          <td>8:30–10:00</td>
+          <td>Backup: video of the demo, PPT PDF, repo link, charged laptop, card + vial in a pouch. Sleep-capable person on laptop, rest of team on talking.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Claude jobs for Field and Story (copy-paste prompts)</h2>
+    <h3>Field</h3>
+    <div class="box">
+      We are building a phone app that reads a colour-change test next to a printed colour card.
+      Help me design a printable 6-patch card (white, black, gray, red, yellow, purple) with exact sizes.
+      Then a photo shoot list: 10 positive, 10 negative, 10 messy, each under daylight / yellow lamp / overhead, with and without the card.
+      How do I label files so a coder can train nothing and still test ΔE?
+    </div>
+    <h3>Story</h3>
+    <div class="box">
+      Official SIH26231 (NCB): subjective colour, no documentary record. App: card in frame, pos/neg/inconclusive, hash+GPS+officer+time, searchable log. Presumptive only.
+      Write a 3-minute spoken demo script and 8 PPT slide titles that map 1:1 to those bullets.
+      Also 5 judge Q&amp;A: “is this evidence?”, “what if lighting is bad?”, “why not a neural net?”, “false positives of field kits?”, “why inconclusive?”
+      Do not give chemistry for real narcotics kits.
+    </div>
+    <h3>Colour (the three who code a bit)</h3>
+    <div class="box">
+      Write JavaScript: linearize sRGB, von Kries white balance from a gray patch mean [R,G,B], convert to HSV and CIE Lab, ΔE76 to three reference Labs.
+      Return {label, confidence, reasons} where label is positive | negative | inconclusive.
+      Inconclusive if card missing, clip percent high, or top two ΔE within a margin.
+    </div>
+
+    <h2>Rules so we do not die at 4am</h2>
+    <ul>
+      <li>One repo. Lead merges. No surprise npm packages at 5am.</li>
+      <li>No extra features: multilingual, SMS, blockchain, “AI chatbot for officers,” login with Aadhaar.</li>
+      <li>If Colour is late, Screens show a fake result and we still demo the seal + log. Honesty with judges: “classifier is rule-based ΔE, not a neural net” is a <em>flex</em>.</li>
+      <li>Field and Story talk in the demo. Lead drives the laptop. Colour/Seal/Screens only speak if asked.</li>
+      <li>Everyone reads the official four bullets twice. If a task does not serve one of them, drop it.</li>
+    </ul>
+
+    <h2>Bonus only if MVP is green before 6am</h2>
+    <ul>
+      <li>Auto-detect card squares instead of drawing boxes</li>
+      <li>Flash on/off pair (SSNR) from the 2020 phone-colorimetry paper</li>
+      <li>PDF export of the record</li>
+      <li>Offline note in the UI (save locally; sync later is a lie we do not implement)</li>
+    </ul>
+
+    <p class="muted">
+      Pair this file with <code>SIH26231-team-brief.html</code> (science + official text) and
+      <code>SIH26231-explainer.html</code> (plain language). Assign the six names before you sleep.
+    </p>
+  </main>
+</body>
+</html>

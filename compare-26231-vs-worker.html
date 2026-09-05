@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>26231 vs worker-phone problems</title>
+  <style>
+    :root {
+      --bg: #111;
+      --card: #1c1c1c;
+      --text: #eee;
+      --muted: #9a9a9a;
+      --line: #333;
+      --accent: #6ea8ff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+    }
+    main { max-width: 46rem; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
+    h1 { font-size: 1.7rem; line-height: 1.25; margin: 0 0 0.5rem; }
+    h2 { font-size: 1.2rem; margin: 2rem 0 0.6rem; }
+    p, li, td { font-size: 1.05rem; }
+    .muted { color: var(--muted); }
+    .box {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 1rem 1.1rem;
+      margin: 1rem 0;
+    }
+    .id { font-family: ui-monospace, Consolas, monospace; color: var(--accent); }
+    table { width: 100%; border-collapse: collapse; margin: 0.8rem 0 1.2rem; font-size: 0.95rem; }
+    th, td {
+      text-align: left; vertical-align: top;
+      padding: 0.55rem 0.45rem;
+      border-bottom: 1px solid var(--line);
+    }
+    th {
+      color: var(--muted);
+      font-family: system-ui, sans-serif;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="muted">Section 4 was three ideas, not one. Comparison vs the drug-test app.</p>
+    <h1>Drug-test companion vs “worker with a phone”</h1>
+    <p>
+      The thing you liked is a <em>vibe</em>: a real person, a cheap phone, an app that does one job in the field.
+      The drug-test idea is the same vibe, except the worker is an NCB officer, not a weaver or kabadiwala.
+    </p>
+    <div class="box">
+      <strong>Pick if the only question is “highest chance to win both SSH and SIH”:</strong>
+      stay on <span class="id">SIH26231</span> (field drug-test companion).<br /><br />
+      <strong>Pick if you will only stay awake all night for a civilian worker story:</strong>
+      do not take the artisan listing app. Take <span class="id">SIH26229</span> Kabadiwala Connect,
+      and build it like 26231 (photo → classify → signed receipt).
+    </div>
+
+    <h2>The three “worker phone” briefs (section 4)</h2>
+    <table>
+      <thead>
+        <tr><th>PS</th><th>Who the phone is for</th><th>Overnight?</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="id">SIH26090</span> Artisan catalog</td>
+          <td>Weaver / craftsperson who cannot write an Amazon page</td>
+          <td>Pretty demo. Needs image-AI + voice + pricing. APIs can die at 3am.</td>
+        </tr>
+        <tr>
+          <td><span class="id">SIH26229</span> Kabadiwala Connect</td>
+          <td>Scrap collector selling e-waste to a legal recycler</td>
+          <td>Closest twin to 26231. Official brief is huge — you must cut it.</td>
+        </tr>
+        <tr>
+          <td><span class="id">SIH26089</span> Co-op plumber app</td>
+          <td>Electrician / plumber in a labour cooperative</td>
+          <td>Easiest clone (Urban Company). Weakest originality unless co-op is loud.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Head to head: 26231 vs 26229</h2>
+    <p class="muted">These two are the real choice. Same skeleton: camera, classify, lock a record, field worker.</p>
+    <table>
+      <thead>
+        <tr><th></th><th>SIH26231 Drug-test companion</th><th>SIH26229 Kabadiwala Connect</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>User</td>
+          <td>Narcotics officer with an official kit</td>
+          <td>Kabadiwala with a sack of cables / PCBs</td>
+        </tr>
+        <tr>
+          <td>Job in one line</td>
+          <td>Photograph the colour, name it fairly, seal the photo</td>
+          <td>Photograph the scrap, estimate a fair price, seal a handover to a legal recycler</td>
+        </tr>
+        <tr>
+          <td>Who wrote it</td>
+          <td>Narcotics Control Bureau (Home Ministry)</td>
+          <td>Ministry of Mines / JNARDDC</td>
+        </tr>
+        <tr>
+          <td>How long is the official spec</td>
+          <td>Tiny. Four features. They even list the deliverable.</td>
+          <td>Very long. Prices, EPR rules, many material types, recycler registry, offline, vernacular, AI classify…</td>
+        </tr>
+        <tr>
+          <td>Can you finish the brief in 12 hours?</td>
+          <td>Yes. That is the whole cheat code.</td>
+          <td>No, not the full brief. You finish a slice: one material, photo, fake price table, receipt with GPS+hash.</td>
+        </tr>
+        <tr>
+          <td>Demo theatre</td>
+          <td>Colour card + yellow lamp trick. “Without the card it lies.” Memorable, a bit cold.</td>
+          <td>Hold a charger cable, get a price, generate a receipt. Warm, India-problem, judges get it instantly.</td>
+        </tr>
+        <tr>
+          <td>Campus SSH history</td>
+          <td>Nothing identical last year</td>
+          <td>SSH 2024 winner was SWASST: photo waste, recyclable or not. Same instinct. They then did not make SIH nationals.</td>
+        </tr>
+        <tr>
+          <td>How many other SNU teams</td>
+          <td>Fewer. “Drugs + hash” sounds scary / boring</td>
+          <td>More. Green + poor worker + AI is a popular pitch</td>
+        </tr>
+        <tr>
+          <td>National SIH</td>
+          <td>You only fight teams on this PS. NCB already paid a tracking tool in 2024 (SIH1562). A complete prototype of a tiny spec is hard to beat with vapourware.</td>
+          <td>You fight teams who spent weeks on price data and recycler lists. A thin overnight slice can look unfinished next to them.</td>
+        </tr>
+        <tr>
+          <td>Curiosity while building</td>
+          <td>Cameras lie about colour. Hashes are wax seals. Inconclusive is honesty.</td>
+          <td>Fair price vs backyard acid. Why lithium gets lost. Receipt as dignity.</td>
+        </tr>
+        <tr>
+          <td>Risk</td>
+          <td>Team is bored / squeamish. Demo looks like a science lab not a product.</td>
+          <td>Scope explosion. Looks like a startup pitch deck with three screens.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Where the artisan app sits</h2>
+    <p>
+      <span class="id">SIH26090</span> is the prettiest: messy shawl photo → clean listing → Hindi/English copy.
+      It loses to both of the above on win-odds unless you already have a designer and a working image/LLM API
+      with an offline fallback. If the API is down, the product is a camera roll.
+    </p>
+
+    <h2>Why 26231 still wins the reasoning</h2>
+    <p>
+      SSH is 12 hours. SIH is per-problem. The drug-test brief is a checklist you can tick.
+      Kabadiwala is a ministry novel you can only summarise. Judges at SSH love worker stories;
+      judges at SIH (NCB) love a tool that matches the sentence they wrote.
+    </p>
+    <p>
+      26231 <em>is</em> a worker-with-a-phone problem. The worker just happens to wear a uniform.
+      If that framing does not get you curious, 26229 is the honest second — same camera + seal trick,
+      warmer story, fatter spec. Build only: lot photo, one price, signed handover. Ignore the rest of the PDF until after SSH.
+    </p>
+  </main>
+</body>
+</html>

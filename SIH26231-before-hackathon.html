@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Do this BEFORE the hackathon — baby checklist</title>
+  <style>
+    :root {
+      --bg: #111; --card: #1c1c1c; --text: #eee; --muted: #9a9a9a;
+      --line: #333; --accent: #6ea8ff;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Georgia, "Times New Roman", serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+    main { max-width: 42rem; margin: 0 auto; padding: 2.2rem 1.2rem 4rem; }
+    h1 { font-size: 1.65rem; line-height: 1.25; margin: 0 0 0.5rem; }
+    h2 { font-size: 1.18rem; margin: 2rem 0 0.5rem; }
+    p, li { font-size: 1.06rem; }
+    .muted { color: var(--muted); }
+    .box {
+      background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+      padding: 1rem 1.1rem; margin: 0.9rem 0;
+    }
+    label.item {
+      display: flex; gap: 0.65rem; align-items: flex-start;
+      background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+      padding: 0.75rem 0.9rem; margin: 0.45rem 0; cursor: pointer;
+    }
+    label.item input { margin-top: 0.35rem; flex-shrink: 0; }
+    table { width: 100%; border-collapse: collapse; margin: 0.6rem 0 1rem; font-size: 0.95rem; }
+    th, td { text-align: left; vertical-align: top; padding: 0.45rem 0.4rem; border-bottom: 1px solid var(--line); }
+    th { color: var(--muted); font-family: system-ui, sans-serif; font-size: 0.75rem; }
+    .swatch {
+      display: inline-block; width: 1.1rem; height: 1.1rem; border: 1px solid #666;
+      vertical-align: middle; margin-right: 0.35rem;
+    }
+    ol { padding-left: 1.25rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="muted">Finish all of this before Saturday 5 Sep, 10:00 PM. If you skip this, you will spend the night buying tape.</p>
+    <h1>Baby checklist: before the hackathon</h1>
+    <p>
+      You are not building a drug lab. You are bringing a <strong>printed colour card</strong>, a <strong>fake test</strong> (pH strip or food colour),
+      charged laptops, and a half-ready app. Tick boxes as you go.
+    </p>
+    <div class="box">
+      Official problem (teammates: check yourselves):
+      <a href="https://www.sih.gov.in/sih2026PS" style="color:#6ea8ff">https://www.sih.gov.in/sih2026PS</a>
+      → Search box → type <strong>SIH26231</strong> → click the title.
+    </div>
+
+    <h2>0. People (5 minutes)</h2>
+    <label class="item"><input type="checkbox" /> We are 6 people. At least one girl. Everyone knows the WhatsApp group.</label>
+    <label class="item"><input type="checkbox" /> Names on the six jobs: Lead (you) / Field / Story / Colour / Seal / Screens. Write them in the chat.</label>
+    <label class="item"><input type="checkbox" /> Everyone can open <a href="https://www.sih.gov.in/sih2026PS" style="color:#6ea8ff">sih.gov.in/sih2026PS</a> and has searched SIH26231 themselves.</label>
+
+    <h2>1. The “red paper” — it is a COLOUR CARD, not one red sheet</h2>
+    <p>
+      One red paper is useless. The phone needs <strong>known colours in the same photo as the test</strong>
+      so it can tell “this room is yellow-ish.” You print <strong>one A4 page</strong> with 6 fat squares.
+    </p>
+    <table>
+      <thead><tr><th>Square</th><th>What to print</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td><span class="swatch" style="background:#ffffff"></span> White</td><td>Plain white paper colour. RGB 255,255,255</td><td>Brightest reference</td></tr>
+        <tr><td><span class="swatch" style="background:#2a2a2a"></span> Black</td><td>RGB 0,0,0 or as dark as the printer goes</td><td>Darkest reference</td></tr>
+        <tr><td><span class="swatch" style="background:#808080"></span> Gray</td><td>RGB 128,128,128 (middle gray)</td><td>The important one. Used to fix lighting</td></tr>
+        <tr><td><span class="swatch" style="background:#e02020"></span> Red</td><td>RGB 224, 32, 32. Strong red, not pink, not maroon</td><td>Tells the phone what “red” is in this light</td></tr>
+        <tr><td><span class="swatch" style="background:#f0d020"></span> Yellow</td><td>RGB 240, 208, 32</td><td>Streetlights are yellow. We need this</td></tr>
+        <tr><td><span class="swatch" style="background:#7030a0"></span> Purple</td><td>RGB 112, 48, 160. Not blue, not pink</td><td>Many kit “positives” look purplish. Fake target colour</td></tr>
+      </tbody>
+    </table>
+    <div class="box">
+      <strong>How to make it (stupid version)</strong>
+      <ol>
+        <li>Open Google Slides or PowerPoint. Page = A4 landscape or portrait, does not matter.</li>
+        <li>Draw 6 squares. Each square at least <strong>4 cm × 4 cm</strong> (bigger is better, like a biscuit). No tiny stamps.</li>
+        <li>Fill with the 6 colours above. Put the name under each square in huge letters: WHITE BLACK GRAY RED YELLOW PURPLE.</li>
+        <li>Leave a white margin around the page so you can hold it without covering squares.</li>
+        <li>Print in <strong>colour</strong>. Ask for <strong>matte / normal paper</strong>, not glossy photo paper (gloss = camera glare = app cries).</li>
+        <li>Print <strong>3 copies</strong>. One will get wet. One stays in the bag as backup.</li>
+        <li>Do <strong>not</strong> laminate. Do <strong>not</strong> put it behind shiny plastic.</li>
+        <li>If the campus printer is trash, buy: 1 white cardstock, 1 pack of coloured paper (red, yellow, purple, black) and <strong>tape 4 cm squares</strong> onto white A4. Ugly is fine. Same sizes.</li>
+      </ol>
+    </div>
+    <label class="item"><input type="checkbox" /> Colour card printed, 3 copies, matte, 6 big squares, names written on them.</label>
+    <label class="item"><input type="checkbox" /> I can hold the card in one hand and a vial/strip in the other and see both at once.</label>
+
+    <h2>2. Fake kit (you will not bring real narcotics tests)</h2>
+    <label class="item"><input type="checkbox" /> pH strips from a chemist / Amazon / lab cupboard <strong>or</strong> food colouring (red + blue = purple) + a small clear plastic/glass vial or bottle cap.</label>
+    <label class="item"><input type="checkbox" /> Water bottle to mix. Tissue. Tape. A marker.</label>
+    <label class="item"><input type="checkbox" /> Practice once at home: make a “negative” (almost no colour) and a “positive” (strong purple/red). Put the card next to it. Take a photo on your phone. If you cannot see both, print bigger squares.</label>
+
+    <h2>3. The yellow-lamp trick (the wow demo)</h2>
+    <label class="item"><input type="checkbox" /> One cheap desk lamp or phone torch. Yellow-ish is perfect (warm bulb).</label>
+    <label class="item"><input type="checkbox" /> We will show: same fake test, lamp ON, <em>without</em> card = messy colour. Lamp ON, <em>with</em> card = app stays calm. Practice this Saturday afternoon for 5 minutes.</label>
+
+    <h2>4. Stuff to pack like you are going to a sleepover</h2>
+    <label class="item"><input type="checkbox" /> Laptop + charger. Fully charged before 10pm.</label>
+    <label class="item"><input type="checkbox" /> Phone + charger (camera demo). Power bank.</label>
+    <label class="item"><input type="checkbox" /> Mouse if you hate the trackpad. Earphones.</label>
+    <label class="item"><input type="checkbox" /> Extension board / spike guard. One for the team if you can.</label>
+    <label class="item"><input type="checkbox" /> ID card. Freshers: curfew waiver / whatever GDG told you.</label>
+    <label class="item"><input type="checkbox" /> Water, a snack you can eat at 4am, hoodie, medicines you actually take.</label>
+    <label class="item"><input type="checkbox" /> Colour cards + fake kit + lamp in a plastic pouch so they do not get crushed.</label>
+
+    <h2>5. Computers (Lead + the three who can code)</h2>
+    <label class="item"><input type="checkbox" /> GitHub account. All six invited to one repo (even Field/Story, view is fine).</label>
+    <label class="item"><input type="checkbox" /> Lead: empty app already runs on localhost with a Camera page that asks for webcam permission. Do this SATURDAY DAY, not at 10:05pm.</label>
+    <label class="item"><input type="checkbox" /> Node/Python/whatever Lead picked is installed on Lead’s laptop. Others can use Claude in the browser. Do not all install 7 frameworks.</label>
+    <label class="item"><input type="checkbox" /> Claude / ChatGPT logged in on Field + Story phones (for research prompts in the plan file).</label>
+    <label class="item"><input type="checkbox" /> Offline backup: PPT on a USB / Google Drive / WhatsApp file. Internet will be sad.</label>
+
+    <h2>6. Paperwork brain (Story, 30 minutes)</h2>
+    <label class="item"><input type="checkbox" /> Screenshot the official SIH26231 popup from sih.gov.in. Put it in the WhatsApp group.</label>
+    <label class="item"><input type="checkbox" /> PPT with 8 empty slides: Title, Problem (NCB quote), Our 4 features, Camera+card, Classify, Sealed record, Log, Demo+disclaimer.</label>
+    <label class="item"><input type="checkbox" /> One sentence everyone can say: <em>“We do not detect drugs. We detect a colour fairly and lock the photo.”</em></label>
+
+    <h2>Saturday afternoon — last 2 hours before 10pm</h2>
+    <label class="item"><input type="checkbox" /> 6:00 PM: eat real food.</label>
+    <label class="item"><input type="checkbox" /> 7:00 PM: Field + Lead take 10 photos of fake pos / fake neg with the card. Send to Colour.</label>
+    <label class="item"><input type="checkbox" /> 8:00 PM: pack bag using this page. Tick again.</label>
+    <label class="item"><input type="checkbox" /> 9:00 PM: bathroom, water, laptops at 100%.</label>
+    <label class="item"><input type="checkbox" /> 9:45 PM: sit down. Do not start a new idea.</label>
+
+    <h2>Do NOT buy / do NOT bring</h2>
+    <ul>
+      <li>Real narcotics field kits, powders, “to try the chemistry.” Illegal and we do not need it.</li>
+      <li>Glossy photo paper, laminator, Arduino, extra sensors. Official brief = <strong>no new hardware</strong>.</li>
+      <li>A second app idea at 9pm.</li>
+    </ul>
+
+    <div class="box">
+      <strong>If you only do 4 things, do these:</strong>
+      print the 6-square card ×3 · fake coloured liquid or pH strip · charged laptop + lamp · empty camera page already opening on Lead’s machine.
+    </div>
+    <p class="muted">More detail: SIH26231-team-plan.html (jobs) and SIH26231-team-brief.html (science). This page is only “go buy / print / pack.”</p>
+  </main>
+</body>
+</html>

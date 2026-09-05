@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Past SIH and Smart SNU winning problems</title>
+  <style>
+    :root {
+      --bg: #111;
+      --card: #1c1c1c;
+      --text: #eee;
+      --muted: #9a9a9a;
+      --line: #333;
+      --accent: #6ea8ff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+    }
+    main {
+      max-width: 46rem;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem 4rem;
+    }
+    h1 { font-size: 1.75rem; line-height: 1.25; margin: 0 0 0.5rem; }
+    h2 { font-size: 1.2rem; margin: 2.2rem 0 0.6rem; }
+    h3 { font-size: 1.05rem; margin: 1.1rem 0 0.35rem; }
+    p, li { font-size: 1.05rem; }
+    .muted { color: var(--muted); }
+    .box, article {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 1rem 1.1rem;
+      margin: 1rem 0;
+    }
+    .id { font-family: ui-monospace, Consolas, monospace; color: var(--accent); }
+    a { color: var(--accent); }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+      margin: 0.75rem 0 1.1rem;
+    }
+    th, td {
+      text-align: left;
+      vertical-align: top;
+      padding: 0.5rem 0.4rem;
+      border-bottom: 1px solid var(--line);
+    }
+    th {
+      color: var(--muted);
+      font-weight: 600;
+      font-family: system-ui, sans-serif;
+      font-size: 0.78rem;
+    }
+    ul { margin: 0.35rem 0 0; padding-left: 1.2rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="muted">Compiled 3 Sep 2026 · not an official SIH dump</p>
+    <h1>What actually won in past years</h1>
+    <p>
+      SIH does not have one overall champion. There is usually <strong>one winning team per problem statement</strong>
+      (sometimes joint winners). So “winning problems” means: these briefs produced a team the ministry/jury paid.
+    </p>
+    <div class="box">
+      <strong>Honesty first.</strong> SIH 2024 has a full official results table.
+      SIH 2025 does not have one public spreadsheet I could download — that section is stitched from
+      nodal-centre press notes and team posts. Smart SNU Hackathon never published a complete winner PDF;
+      campus names come from student / GDG posts. If a line has no PS number, treat it as “this is what they built,” not an official ID.
+    </div>
+
+    <h2>The pattern (useful for 2026)</h2>
+    <p>Winners are rarely “national satellite GIS with 20 integrations.” They are usually:</p>
+    <ul>
+      <li>A phone or web tool a real officer / farmer / student can click in a demo</li>
+      <li>A short, named job (schedule therapy, track a loan, catch a phishing link, book a slot)</li>
+      <li>Software that looks finished, even if the AI is thin</li>
+      <li>Or hardware — but that is a 36-hour / multi-day national finale with kits, not a 12-hour campus night</li>
+    </ul>
+    <p>
+      That is why <span class="id">SIH26231</span> (photo the colour kit, lock the record) sits in the same family
+      as several past winners: field workflow + evidence, not a science-fair poster.
+    </p>
+
+    <h2>Smart SNU Hackathon (your campus qualifier)</h2>
+    <p class="muted">GDG on Campus SNIoE, Greater Noida. Overnight internal SIH. No official full ranking found.</p>
+
+    <article>
+      <h3>SSH 2025 (6–7 Sep 2025, SARC, ~45 teams / 250 people)</h3>
+      <table>
+        <thead>
+          <tr><th>Place</th><th>Team / product</th><th>Problem they worked</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1st</td>
+            <td>Krishi AI Sahayak (Muskan Saxena, Anish Gupta, Suryansh Rohil, Arnab Mandal)</td>
+            <td>Agri assistant: crop / soil / weather advice, multilingual, aimed at Jharkhand. IoT + ML story. Same family as “farmer phone app.”</td>
+          </tr>
+          <tr>
+            <td>3rd</td>
+            <td>Secure Shell — Hop-On</td>
+            <td><span class="id">SIH25013</span> Real-time public transport tracking for small cities. GPS + map + ETA. Demoable in one night.</td>
+          </tr>
+          <tr>
+            <td>Also built that night</td>
+            <td>Other teams (not ranked in public posts)</td>
+            <td>SMS bus-arrival for tier-2 cities (Google Maps API + Fast2SMS). Again: one clear user, one working loop.</td>
+          </tr>
+        </tbody>
+      </table>
+    </article>
+
+    <article>
+      <h3>SSH 2024 (Sep 2024, ~50+ teams)</h3>
+      <p>
+        <strong>1st: Team SWASST</strong> — Smart Waste Automatic Sanitation. User photographs waste;
+        app says recyclable or not; alerts people/authorities nearby. Software first, later they talked about cameras/drones.
+        Their own recap: they won campus, then <strong>no SNU Greater Noida team made the SIH national finale that year</strong>.
+        Campus win ≠ national win.
+      </p>
+    </article>
+
+    <article>
+      <h3>Other Shiv Nadar campus (Chennai — different university)</h3>
+      <p>
+        Team <strong>GenX H4CK3RS</strong>, product <strong>LINGUA</strong>: speech ↔ Indian Sign Language.
+        They reached SIH 2024 Grand Finale on <span class="id">SIH1715</span>
+        (AI tool for ISL from English/Hindi audio-visual and back). Runners-up / special mention, not the PS winner.
+        Useful: accessibility + live demo plays well with judges.
+      </p>
+    </article>
+
+    <h2>SIH 2025 national (Dec 2025)</h2>
+    <p>
+      ~271 problem statements. ₹1.5 lakh per winning PS. Software finale was ~36 hours at many nodal centres
+      at once — so “the winners” is a long list, not five names. Below is a <em>sample of problems that paid out</em>,
+      not the complete official roll.
+    </p>
+    <table>
+      <thead>
+        <tr><th>PS / theme</th><th>What it was</th><th>Who we know won</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="id">SIH25023</span></td>
+          <td>AyurSutra — Panchakarma patient management and therapy scheduling (Ministry of AYUSH)</td>
+          <td>Team PanchPlus — 1st on this PS</td>
+        </tr>
+        <tr>
+          <td><span class="id">SIH25149</span></td>
+          <td>Loan utilisation tracking via mobile (Ministry of Social Justice)</td>
+          <td>Technical Terminators</td>
+        </tr>
+        <tr>
+          <td><span class="id">SIH25159</span></td>
+          <td>Real-time AI/ML phishing detection and prevention (AICTE)</td>
+          <td>Vision Craft (K J Somaiya)</td>
+        </tr>
+        <tr>
+          <td><span class="id">SIH25187</span></td>
+          <td>Hot metal and steel ladle tracking (Ministry of Steel) — hardware-ish industrial</td>
+          <td>Joint: Team Solverz (NIT Raipur), ASTRIX7007</td>
+        </tr>
+        <tr>
+          <td><span class="id">SIH25188</span></td>
+          <td>Torpedo ladle container position feedback (Ministry of Steel)</td>
+          <td>Grain Seekers</td>
+        </tr>
+        <tr>
+          <td>Student Innovation hardware</td>
+          <td><span class="id">25115</span> Swadeshi/misc; <span class="id">25119</span> smart vehicles; <span class="id">25125</span> space</td>
+          <td>Sentinel Vision; Sahara + Trombipulor (joint); FLARES</td>
+        </tr>
+        <tr>
+          <td>J&amp;K Higher Education cluster (Vardhaman, Hyderabad)</td>
+          <td>NEP timetable generator; student mental-health platform; central student activity record; career advisory; “Prashikshan” academia–industry</td>
+          <td>Eklavya, Gap Bridgers, Hack Hounds, Team Pioneers, Teen Titans (one winner per PS at that centre)</td>
+        </tr>
+        <tr>
+          <td>Punjab Higher Education cluster (CEC-CGC Landran)</td>
+          <td>Gamified disaster-prep education; immersive environment learning; offline-first agri advisory; curriculum manager; rural school attendance (QR/RFID/biometric)</td>
+          <td>Vision Hackers, Tech Pravaha, NEXAURA 2.3, Phantom Techies, COGNISPHERE</td>
+        </tr>
+        <tr>
+          <td>Hardware, MIT-ADT Pune</td>
+          <td>AICTE / Defence / DST / Kerala health device problems</td>
+          <td>Optivis, VeloTriz, Trailblazers, Inno-Cores, ClutchSIH, Nephron, Arogya Shield</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="muted">
+      Notice: AYUSH scheduling software, loan-tracking phone app, phishing detector, farmer advisory, school attendance.
+      Same “finishable product” shape as 26231 — not a 40-feature national platform.
+    </p>
+
+    <h2>SIH 2024 national (official)</h2>
+    <p>
+      Full table:
+      <a href="https://www.sih.gov.in/sih2024/sih2024-grand-finale-result">sih.gov.in/sih2024/sih2024-grand-finale-result</a>.
+      About <strong>240 problem statements had winners</strong> (~305 winner/joint-winner rows).
+      No winner declared for <span class="id">SIH1529, 1564, 1692, 1697, 1776</span>.
+    </p>
+    <p>Biggest winner-counts by organisation (how many PS slots they filled):</p>
+    <ul>
+      <li>AICTE Student Innovation — 46 slots (many open-ended PSs, each still has its own finalists)</li>
+      <li>Ministry of Jal Shakti — 25</li>
+      <li>Govt of NCT of Delhi — 20</li>
+      <li>NTRO — 15</li>
+      <li>Power / Communication / Social Justice / Housing / Defence — 11–13 each</li>
+    </ul>
+    <h3>Named 2024 problems that match “we can demo this”</h3>
+    <table>
+      <thead>
+        <tr><th>PS</th><th>Problem</th><th>Winner note</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="id">SIH1554</span></td>
+          <td>Smart irrigation for precision farming (Agriculture) — hardware</td>
+          <td>Team Krishak</td>
+        </tr>
+        <tr>
+          <td><span class="id">SIH1556</span></td>
+          <td>Smart yoga mat + AI + watch (AYUSH) — hardware</td>
+          <td>SUPERNOVAZ</td>
+        </tr>
+        <tr>
+          <td><span class="id">SIH1562</span></td>
+          <td>Track dual-use chemicals from factory to end use (Narcotics Control Bureau)</td>
+          <td>If Clause — closest cousin to this year’s NCB colour-kit companion</td>
+        </tr>
+        <tr>
+          <td><span class="id">SIH1715</span></td>
+          <td>AI app: English/Hindi audio-visual ↔ Indian Sign Language</td>
+          <td>SNU Chennai reached finale; another team took the PS win</td>
+        </tr>
+        <tr>
+          <td><span class="id">SIH1714</span></td>
+          <td>Software for speech-language therapy clinics (MoSJE)</td>
+          <td>On the official winner list</td>
+        </tr>
+        <tr>
+          <td><span class="id">SIH1563 / 1565</span></td>
+          <td>NTRO (intel/tech org) software problems — IIT Bombay and DJ Sanghvi among winners</td>
+          <td>Hard domain, strong colleges. Crowded-genius track.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      Problem-statement catalogue for 2024:
+      <a href="https://www.sih.gov.in/sih2024PS">sih.gov.in/sih2024PS</a>
+      (Excel download on that page).
+    </p>
+
+    <h2>SIH 2023 national (official)</h2>
+    <p>
+      Results:
+      <a href="https://sih.gov.in/sih2023-grand-finale-result">sih.gov.in/sih2023-grand-finale-result</a>
+      (234 PSs; prize then ₹1 lakh). No winners for
+      <span class="id">SIH1278, 1338, 1374, 1462, 1499, 1504, 1523</span>.
+    </p>
+    <p>Examples that got announced in press:</p>
+    <ul>
+      <li><span class="id">SIH1503</span> AYUSH automatic drug dispenser (hardware) — NIET Hacktastic Six</li>
+      <li><span class="id">SIH1339</span> Automate drill-core rock lithology logging (software-ish geology) — Life-Line Meds</li>
+      <li><span class="id">SIH1472</span> Student Innovation, renewable energy — Green Printing (hardware)</li>
+      <li>Kerala / Gujarat health and civic hardware PSs also paid out (patient care, etc.)</li>
+    </ul>
+
+    <h2>What this does to your shortlist</h2>
+    <div class="box">
+      Campus SSH rewards a <strong>working loop in 12 hours</strong> (agri chatbot, bus GPS, waste photo).
+      National SIH rewards a <strong>ministry-shaped product</strong> (AYUSH scheduler, NCB tracking, loan app, ISL translator).
+      <span class="id">SIH26231</span> is both: NCB, camera, signed record, demoable overnight.
+      Hardware and Student Innovation do win nationally, but they are a different sport from Friday 10pm at SARC.
+    </div>
+    <p class="muted">
+      Sources: official SIH 2023/2024 result pages; SIH 2025 nodal press (Vardhaman, CEC-CGC Landran, MIT-ADT, Forge);
+      college/team posts (PanchPlus, Vision Craft, Technical Terminators, Secure Shell, SWASST, Krishi AI Sahayak, GenX H4CK3RS).
+    </p>
+  </main>
+</body>
+</html>

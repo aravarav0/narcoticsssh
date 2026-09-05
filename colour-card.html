@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SIH26231 colour card — print matte A4</title>
+  <style>
+    @page { size: A4; margin: 12mm; }
+    body { font-family: Arial, sans-serif; margin: 16px; }
+    h1 { font-size: 18px; margin: 0 0 8px; }
+    p { font-size: 13px; margin: 0 0 12px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    .cell { text-align: center; }
+    .swatch { height: 48mm; border: 1px solid #222; }
+    .name { font-size: 20px; font-weight: 700; margin-top: 6px; letter-spacing: 0.04em; }
+    .rgb { font-size: 12px; color: #333; }
+  </style>
+</head>
+<body>
+  <h1>SIH26231 reference colour card</h1>
+  <p>Print on matte / plain paper. Do not laminate. Hold this in the same photo as the simulated kit.</p>
+  <div class="grid">
+    <div class="cell">
+      <div class="swatch" style="background:#ffffff"></div>
+      <div class="name">WHITE</div>
+      <div class="rgb">255, 255, 255</div>
+    </div>
+    <div class="cell">
+      <div class="swatch" style="background:#808080"></div>
+      <div class="name">GRAY</div>
+      <div class="rgb">128, 128, 128</div>
+    </div>
+    <div class="cell">
+      <div class="swatch" style="background:#e02020"></div>
+      <div class="name">RED</div>
+      <div class="rgb">224, 32, 32</div>
+    </div>
+    <div class="cell">
+      <div class="swatch" style="background:#111111"></div>
+      <div class="name">BLACK</div>
+      <div class="rgb">0, 0, 0</div>
+    </div>
+    <div class="cell">
+      <div class="swatch" style="background:#f0d020"></div>
+      <div class="name">YELLOW</div>
+      <div class="rgb">240, 208, 32</div>
+    </div>
+    <div class="cell">
+      <div class="swatch" style="background:#7030a0"></div>
+      <div class="name">PURPLE</div>
+      <div class="rgb">112, 48, 160</div>
+    </div>
+  </div>
+</body>
+</html>

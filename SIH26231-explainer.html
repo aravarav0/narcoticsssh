@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SIH26231 — what this problem actually is</title>
+  <style>
+    :root {
+      --bg: #111;
+      --card: #1c1c1c;
+      --text: #eee;
+      --muted: #9a9a9a;
+      --line: #333;
+      --accent: #6ea8ff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+    }
+    main {
+      max-width: 42rem;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem 4rem;
+    }
+    h1 { font-size: 1.75rem; line-height: 1.25; margin: 0 0 0.5rem; }
+    h2 { font-size: 1.2rem; margin: 2rem 0 0.6rem; }
+    p, li { font-size: 1.05rem; }
+    .muted { color: var(--muted); }
+    .box {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 1rem 1.1rem;
+      margin: 1rem 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+      margin: 0.75rem 0 1.25rem;
+    }
+    th, td {
+      text-align: left;
+      vertical-align: top;
+      padding: 0.55rem 0.5rem;
+      border-bottom: 1px solid var(--line);
+    }
+    th { color: var(--muted); font-weight: 600; font-family: system-ui, sans-serif; font-size: 0.8rem; }
+    code { font-family: ui-monospace, Consolas, monospace; color: var(--accent); }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="muted">SIH26231 · Narcotics Control Bureau · Ministry of Home Affairs</p>
+    <h1>Digital Companion for Field Drug Testing</h1>
+    <p class="muted">You are not building a chemistry lab. You are building a phone witness.</p>
+
+    <div class="box">
+      <strong>One sentence.</strong>
+      Police already use a tiny kit that changes colour. Your app photographs that colour fairly, names the result, and locks the photo to a time, place, and officer so nobody can quietly swap it later.
+    </div>
+
+    <h2>What exists today</h2>
+    <p>Officers carry a field kit. A drop of unknown stuff goes in. The kit changes colour. Humans squint at it under streetlights and argue whether it is “purple enough.” A notebook line can be written later. Courts do not love “trust me, I saw purple.”</p>
+
+    <h2>The job, as four steps</h2>
+    <table>
+      <thead>
+        <tr><th>Step</th><th>Officer</th><th>Your app</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1. Kit</td>
+          <td>Uses the official colour-change kit</td>
+          <td>Does no chemistry. The kit already exists.</td>
+        </tr>
+        <tr>
+          <td>2. Photo</td>
+          <td>Puts kit + printed colour card in one picture</td>
+          <td>Uses the card to correct weird lighting</td>
+        </tr>
+        <tr>
+          <td>3. Call</td>
+          <td>Waits a second instead of squinting</td>
+          <td>Says Positive, Negative, or Inconclusive</td>
+        </tr>
+        <tr>
+          <td>4. Lock</td>
+          <td>Gets a record they can show later</td>
+          <td>Saves GPS, time, officer ID, photo, and a hash (fingerprint) of the photo</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>The colour card</h2>
+    <p>Same trick photographers use. Known colours in the shot tell the computer how yellow or dim the room is. Then it compares the vial to those known colours instead of trusting the phone’s lying pixels.</p>
+
+    <h2>The sealed envelope</h2>
+    <p>A <strong>hash</strong> is a fingerprint of the exact photo file. Change one pixel, fingerprint changes. GPS and time answer where and when. Together that is closer to evidence than a WhatsApp screenshot.</p>
+
+    <h2>Do not claim this convicts anyone</h2>
+    <p>NCB says the result is <strong>presumptive</strong> — a first look, like a smoke alarm. A real lab still confirms. Write that on the screen. Honesty is part of the brief.</p>
+
+    <h2>Hackathon demo (no real drugs)</h2>
+    <p>Use a pH strip, food colouring in a vial, or printed colour circles next to a paper colour card. Label it “simulated kit.” The puzzle is the same: a coloured blob + a reference card + messy light.</p>
+
+    <div class="box">
+      <strong>Sentence to remember while building.</strong><br />
+      You are not detecting drugs. You are detecting a colour fairly, then refusing to let that photo become a rumour.
+    </div>
+  </main>
+</body>
+</html>
