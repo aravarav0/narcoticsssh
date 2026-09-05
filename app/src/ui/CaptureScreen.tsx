@@ -5,7 +5,8 @@ import { readGps } from "../lib/gps"
 import { sha256Hex } from "../lib/hash"
 import { loadPrintRunRgb } from "../lib/printRun"
 import { CALIBRATION_SHOTS, type CalibrationShotId } from "../lib/shots"
-import { makeRecord, type TestRecord } from "../lib/store"
+import { loadRecords, makeRecord, type TestRecord } from "../lib/store"
+import { sealRecord } from "../lib/seal"
 import { CaptureOverlay } from "./CaptureOverlay"
 
 function drawCover(
@@ -92,6 +93,8 @@ export function CaptureScreen(props: {
         gps,
         classified,
       })
+      record.previousRecordHash = loadRecords()[0]?.seal?.payloadHash ?? null
+      record.seal = await sealRecord(record)
       props.onCaptured(record, JSON.stringify(classified.debug, null, 2))
     } catch (err) {
       setError(err instanceof Error ? err.message : "Capture failed")

@@ -122,3 +122,5 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 .debug { font-size: 0.78rem; color: var(--muted); line-height: 1.4; }
 .hash-flip { color: #f3c14e; }
+.seal-ok { color: #82d8a8; font-weight: 700; }
+.seal-bad { color: #ff937d; font-weight: 700; }

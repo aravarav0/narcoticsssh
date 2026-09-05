@@ -6,6 +6,7 @@ import { flipFirstByte, sha256Hex } from "./lib/hash"
 import { CALIBRATION_SHOTS, type CalibrationShotId } from "./lib/shots"
 import { loadRecords, saveRecord, type TestRecord } from "./lib/store"
 import { loadImage } from "./lib/camera"
+import { evidencePayload, verifyRecordSeal } from "./lib/seal"
 
 type Page = "login" | "capture" | "result" | "record" | "log"
 
@@ -17,6 +18,7 @@ export default function App() {
   const [debug, setDebug] = useState("")
   const [query, setQuery] = useState("")
   const [flippedHash, setFlippedHash] = useState<string | null>(null)
+  const [sealVerified, setSealVerified] = useState<boolean | null>(null)
   const [shotId, setShotId] = useState<CalibrationShotId | "">("01-card-only-daylight")
   const records = useMemo(() => loadRecords(), [page, current])
 
@@ -33,6 +35,7 @@ export default function App() {
     setCurrent(record)
     setDebug(classifiedJson)
     setFlippedHash(null)
+    setSealVerified(null)
     setPage("result")
   }
 
@@ -104,6 +107,7 @@ export default function App() {
             Calibration: {current.method}
             {current.flags.length ? ` · flags: ${current.flags.join(", ")}` : " · quality ok"}
           </p>
+          <p className="debug">Confidence: {JSON.parse(debug || "{}").confidence ?? "—"} ({JSON.parse(debug || "{}").confidenceScore ?? "—"}/100)</p>
           <pre className="debug">{debug}</pre>
           {shotId ? (
             <button
@@ -153,12 +157,20 @@ export default function App() {
             <p>Call: {current.result}</p>
             <p className="muted">SHA-256 of JPEG bytes</p>
             <p className="mono">{current.sha256Hex}</p>
+            <p className="muted">Evidence signature: {current.seal ? `P-256 · key ${current.seal.keyId}` : "legacy / unsigned"}</p>
+            {sealVerified != null ? <p className={sealVerified ? "seal-ok" : "seal-bad"}>{sealVerified ? "✓ Signature and sealed metadata verified" : "✕ Verification failed — record may have changed"}</p> : null}
             {flippedHash ? (
               <p className="mono hash-flip">After flipping 1 byte: {flippedHash}</p>
             ) : null}
           </div>
           <button className="ghost" onClick={() => void proveHashMoves()}>
             Flip one byte — hash must change
+          </button>
+          <button className="ghost" onClick={() => void verifyRecordSeal(current, current.seal).then(setSealVerified)}>
+            Verify digital signature
+          </button>
+          <button className="ghost" onClick={() => downloadJson(`SIH26231-evidence-${current.id}.json`, evidencePayload(current, current.seal))}>
+            Export verifiable evidence package
           </button>
           <button className="primary" onClick={() => setPage("log")}>
             Searchable log
@@ -174,6 +186,7 @@ export default function App() {
           onOpen={(r) => {
             setCurrent(r)
             setDebug("")
+            setSealVerified(null)
             setPage("record")
           }}
           onNew={() => (officerId ? setPage("capture") : setPage("login"))}
