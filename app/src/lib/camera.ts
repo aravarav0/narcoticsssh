@@ -9,18 +9,32 @@ export async function tryLockCamera(track: MediaStreamTrack) {
   }
 }
 
+async function getStream(video: boolean | MediaTrackConstraints): Promise<MediaStream> {
+  if (!navigator.mediaDevices?.getUserMedia) {
+    throw new Error("Camera API missing. Open this page in Safari over https://, or use Take photo.")
+  }
+  return navigator.mediaDevices.getUserMedia({ audio: false, video })
+}
+
+/** Rear camera when possible. Falls back for iPhone Safari constraint quirks. */
 export async function openRearCamera(): Promise<MediaStream> {
-  const stream = await navigator.mediaDevices.getUserMedia({
-    audio: false,
-    video: {
-      facingMode: { ideal: "environment" },
-      width: { ideal: 1280 },
-      height: { ideal: 720 },
-    },
-  })
-  const track = stream.getVideoTracks()[0]
-  if (track) await tryLockCamera(track)
-  return stream
+  const attempts: Array<boolean | MediaTrackConstraints> = [
+    { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } },
+    { facingMode: { ideal: "environment" } },
+    true,
+  ]
+  let last: unknown
+  for (const video of attempts) {
+    try {
+      const stream = await getStream(video)
+      const track = stream.getVideoTracks()[0]
+      if (track) await tryLockCamera(track)
+      return stream
+    } catch (err) {
+      last = err
+    }
+  }
+  throw last instanceof Error ? last : new Error("Camera blocked")
 }
 
 export function blobToDataUrl(blob: Blob): Promise<string> {

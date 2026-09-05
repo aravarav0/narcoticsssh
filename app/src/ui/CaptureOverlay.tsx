@@ -21,7 +21,7 @@ export function CaptureOverlay() {
   const p = DEFAULT_LAYOUT.patches
   return (
     <div className="overlay">
-      <Box kit rect={DEFAULT_LAYOUT.kit} label="kit here" />
+      <Box kit rect={DEFAULT_LAYOUT.kit} label="fill kit" />
       <Box rect={p.white} label="white" />
       <Box rect={p.gray} label="gray" />
       <Box rect={p.red} label="red" />

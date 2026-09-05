@@ -5,7 +5,7 @@ import type { Layout } from "./types"
  * CSS overlay in Capture.tsx MUST use the same numbers.
  */
 export const DEFAULT_LAYOUT: Layout = {
-  kit: { x: 0.36, y: 0.08, w: 0.28, h: 0.34 },
+  kit: { x: 0.36, y: 0.08, w: 0.28, h: 0.22 },
   patches: {
     white: { x: 0.06, y: 0.50, w: 0.28, h: 0.20 },
     gray: { x: 0.36, y: 0.50, w: 0.28, h: 0.20 },

@@ -115,6 +115,12 @@ export function classifyImage(
     else result = "inconclusive"
   }
 
+  const confidenceScore = Math.max(
+    0,
+    Math.min(100, Math.round(100 - d1 * 2 - Math.max(0, THRESHOLDS.deltaEMargin - (d2 - d1)) * 8 - (flags.length ? 35 : 0))),
+  )
+  const confidence = confidenceScore >= 75 ? "high" : confidenceScore >= 45 ? "moderate" : "low"
+
   const patchLabs = {} as Record<PatchId, Lab>
   const patchRgb = {} as Record<PatchId, Rgb8>
   for (const p of patches) {
@@ -139,6 +145,8 @@ export function classifyImage(
       patchLabs,
       patchRgb,
       ccmResidual: ccm?.residualRms ?? null,
+      confidence,
+      confidenceScore,
     },
   }
 }

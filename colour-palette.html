@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SIH26231 educational colour palette — print A4</title>
+  <style>
+    * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    @page { size: A4 portrait; margin: 10mm; }
+    body { font-family: Arial, sans-serif; margin: 0; color: #111; }
+    h1 { font-size: 16px; margin: 0 0 4px; }
+    .sub { font-size: 11px; margin: 0 0 10px; color: #333; }
+    .warn {
+      border: 2px solid #8a6d00; background: #fff8d6; padding: 6px 8px;
+      font-size: 11px; font-weight: 700; margin-bottom: 10px;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th, td { border: 1px solid #222; padding: 6px 7px; vertical-align: middle; text-align: left; }
+    th { background: #111; color: #fff; font-size: 10px; letter-spacing: 0.04em; }
+    .sw {
+      width: 28mm; height: 16mm; border: 1px solid #222; display: inline-block;
+    }
+    .pair { display: flex; gap: 8px; align-items: center; }
+    .lab { font-size: 10px; color: #333; }
+    h2 { font-size: 13px; margin: 12px 0 6px; }
+    .cardgrid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
+    .c { text-align: center; font-size: 9px; font-weight: 700; }
+    .c .sw { width: 100%; height: 18mm; }
+    .foot { font-size: 10px; margin-top: 8px; color: #333; }
+    @media print { .noprint { display: none; } }
+  </style>
+</head>
+<body>
+  <p class="noprint sub">
+    Print colour, matte A4, 100%, <strong>Background graphics ON</strong>.
+    This is our own educational sheet — not an official NCB or Sirchie chart.
+  </p>
+  <h1>Presumptive field-test colours (educational)</h1>
+  <p class="sub">SIH26231 · Digital Companion for Field Drug Testing · NCB / MHA prototype</p>
+  <div class="warn">
+    PRESUMPTIVE ONLY — not a lab result, not proof of possession, not an official NCB kit chart.
+    Colours are approximate hues officers match by eye on a pouch. Real kits print their own chart on the pack.
+    Our live dummy: pale = negative, strong purple = positive.
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>What officers often look at</th>
+        <th>If nothing much happened (neg / unused)</th>
+        <th>If a colour developed (typical positive hue)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Opiate-type spot (Marquis family)</td>
+        <td>
+          <div class="pair"><span class="sw" style="background:#f3ead2"></span><span class="lab">Pale cream</span></div>
+        </td>
+        <td>
+          <div class="pair"><span class="sw" style="background:#7030a0"></span><span class="lab">Purple / violet — our dummy POSITIVE</span></div>
+        </td>
+      </tr>
+      <tr>
+        <td>Amphetamine-type spot</td>
+        <td>
+          <div class="pair"><span class="sw" style="background:#f3ead2"></span><span class="lab">Pale cream</span></div>
+        </td>
+        <td>
+          <div class="pair"><span class="sw" style="background:#c45a18"></span><span class="lab">Orange–brown</span></div>
+        </td>
+      </tr>
+      <tr>
+        <td>Cocaine-type spot (Scott family)</td>
+        <td>
+          <div class="pair"><span class="sw" style="background:#f3ead2"></span><span class="lab">Pale cream</span></div>
+        </td>
+        <td>
+          <div class="pair"><span class="sw" style="background:#2a6fbf"></span><span class="lab">Blue</span></div>
+        </td>
+      </tr>
+      <tr>
+        <td>Cannabis-type spot</td>
+        <td>
+          <div class="pair"><span class="sw" style="background:#f3ead2"></span><span class="lab">Pale cream</span></div>
+        </td>
+        <td>
+          <div class="pair"><span class="sw" style="background:#5a2a7a"></span><span class="lab">Purple–violet</span></div>
+        </td>
+      </tr>
+      <tr>
+        <td>Unclear / mixed / dirty vial</td>
+        <td colspan="2">
+          <div class="pair"><span class="sw" style="background:#8a6a3a"></span><span class="lab">Muddy brown-yellow → our app says INCONCLUSIVE</span></div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Lighting card (this is what goes in the photo — not six drug names)</h2>
+  <div class="cardgrid">
+    <div class="c"><div class="sw" style="background:#ffffff"></div>WHITE</div>
+    <div class="c"><div class="sw" style="background:#808080"></div>GRAY</div>
+    <div class="c"><div class="sw" style="background:#e02020"></div>RED</div>
+    <div class="c"><div class="sw" style="background:#111111"></div>BLACK</div>
+    <div class="c"><div class="sw" style="background:#f0d020"></div>YELLOW</div>
+    <div class="c"><div class="sw" style="background:#7030a0"></div>PURPLE</div>
+  </div>
+  <p class="foot">
+    The lighting card calibrates the room. The kit colour is classified against pale vs purple vs muddy.
+    A printer will shift these hues — that is why the card must be in the same photo as the test.
+  </p>
+</body>
+</html>
