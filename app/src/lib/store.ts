@@ -1,5 +1,6 @@
 import type { ClassifyOutput, ResultLabel } from "../color/types"
 import type { GpsFix } from "./gps"
+import type { EvidenceSeal } from "./seal"
 
 export type TestRecord = {
   id: string
@@ -15,6 +16,9 @@ export type TestRecord = {
   method: ClassifyOutput["debug"]["method"]
   flags: string[]
   notes: string
+  /** SHA-256 of the preceding signed payload. Makes record reordering visible. */
+  previousRecordHash: string | null
+  seal?: EvidenceSeal
 }
 
 const KEY = "sih26231.records"
@@ -55,5 +59,6 @@ export function makeRecord(input: {
     method: input.classified.debug.method,
     flags: input.classified.debug.qualityFlags,
     notes: "",
+    previousRecordHash: null,
   }
 }

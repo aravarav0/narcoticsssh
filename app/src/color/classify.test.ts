@@ -98,6 +98,8 @@ describe("classifyImage", () => {
     expect(out.result).toBe("positive")
     expect(out.presumptive).toBe(true)
     expect(out.debug.method).toBe("ccm")
+    expect(out.debug.confidence).toBe("high")
+    expect(out.debug.confidenceScore).toBeGreaterThanOrEqual(75)
   })
 
   it("calls a pale kit negative", () => {
@@ -119,6 +121,7 @@ describe("classifyImage", () => {
     const out = classifyImage({ data, width, height })
     expect(out.result).toBe("inconclusive")
     expect(out.debug.qualityFlags).toContain("card_missing")
+    expect(out.debug.confidence).toBe("low")
   })
 
   it("keeps default class centres in a usable ΔE range", () => {

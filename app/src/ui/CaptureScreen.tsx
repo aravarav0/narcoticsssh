@@ -5,7 +5,8 @@ import { readGps } from "../lib/gps"
 import { sha256Hex } from "../lib/hash"
 import { loadPrintRunRgb } from "../lib/printRun"
 import { CALIBRATION_SHOTS, type CalibrationShotId } from "../lib/shots"
-import { makeRecord, type TestRecord } from "../lib/store"
+import { loadRecords, makeRecord, type TestRecord } from "../lib/store"
+import { sealRecord } from "../lib/seal"
 import { CaptureOverlay } from "./CaptureOverlay"
 
 function drawCover(
@@ -92,6 +93,8 @@ export function CaptureScreen(props: {
         gps,
         classified,
       })
+      record.previousRecordHash = loadRecords()[0]?.seal?.payloadHash ?? null
+      record.seal = await sealRecord(record)
       props.onCaptured(record, JSON.stringify(classified.debug, null, 2))
     } catch (err) {
       setError(err instanceof Error ? err.message : "Capture failed")
@@ -127,38 +130,19 @@ export function CaptureScreen(props: {
 
   return (
     <>
-      <p className="kicker">SIH26231 · capture</p>
-      <h1>Card in frame. Kit in the top box.</h1>
-      <label htmlFor="shot">Calibration shot</label>
-      <select
-        id="shot"
-        value={props.shotId}
-        onChange={(e) => props.onShotId(e.target.value as CalibrationShotId | "")}
-        style={{
-          width: "100%",
-          background: "#0d0d0d",
-          color: "var(--text)",
-          border: "1px solid var(--line)",
-          padding: "0.65rem",
-        }}
-      >
-        <option value="">Not a calibration shot</option>
-        {CALIBRATION_SHOTS.map((s) => (
-          <option key={s.id} value={s.id}>
-            {s.label}
-          </option>
-        ))}
-      </select>
+      <div className="eyebrow">Step 1 of 3 · capture</div>
+      <h1>Frame the kit and colour card.</h1>
+      <p className="lead small">Keep the vial or strip inside the upper box. Place every colour-card patch inside the lower boxes before capturing.</p>
       <div className="stage" ref={stageRef}>
         <video ref={videoRef} playsInline autoPlay muted />
         <CaptureOverlay />
       </div>
-      {error ? <p className="muted">{error}</p> : null}
+      {error ? <p className="quality-warning">{error}</p> : null}
       <button className="primary" onClick={() => void snap()} disabled={busy}>
-        {busy ? "Sealing photo…" : "Capture"}
+        {busy ? "Analysing and sealing photo…" : "Capture and analyse"}
       </button>
       <label className="ghost" style={{ display: "block", textAlign: "center", padding: "0.7rem", border: "1px solid var(--line)" }}>
-        Upload photo
+        Upload a photo instead
         <input
           type="file"
           accept="image/*"
@@ -167,16 +151,24 @@ export function CaptureScreen(props: {
           onChange={(e) => void onFile(e.target.files?.[0])}
         />
       </label>
-      <div className="row">
+      <details className="technical-details">
+        <summary>Hackathon demo and calibration tools</summary>
+        <label htmlFor="shot">Calibration-study label</label>
+        <select id="shot" value={props.shotId} onChange={(e) => props.onShotId(e.target.value as CalibrationShotId | "")}>
+          <option value="">Not a calibration shot</option>
+          {CALIBRATION_SHOTS.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
+        </select>
+        <div className="row">
         <button className="ghost" onClick={() => void loadDemo("demo-positive.png")} disabled={busy}>
-          Demo +
+          Load simulated positive
         </button>
         <button className="ghost" onClick={() => void loadDemo("demo-negative.png")} disabled={busy}>
-          Demo −
+          Load simulated negative
         </button>
-      </div>
+        </div>
+      </details>
       <button className="ghost" onClick={props.onLog}>
-        Open log
+        View test log
       </button>
     </>
   )
