@@ -146,7 +146,7 @@ export function classifyImage(
       patchLabs,
       patchRgb,
       ccmResidual: ccm?.residualRms ?? null,
-      ccmMatrix: method === "ccm" && ccm ? ccm.M : null,
+      ccmMatrix: ccm?.M ?? null,
       confidence,
       confidenceScore,
       kitColour: describeKitColour(kitLab, kitRgb, classLabs),

@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react"
 import { classifyImage } from "../color/classify"
 import { detectCard } from "../color/detect"
-import { relightCanvas } from "../color/relight"
+import { relightCanvas, relightVonKries } from "../color/relight"
+import { CARD_SRGB } from "../color/card"
 import { DEFAULT_LAYOUT } from "../color/constants"
 import { canvasToJpeg, liveVideoTrack, loadImage, loadOrientedImage, openRearCamera, setTorch, torchSupported } from "../lib/camera"
 import { readGps, type GpsFix } from "../lib/gps"
@@ -217,7 +218,7 @@ export function CaptureScreen(props: {
       })
       const relitImageDataUrl = classified.debug.ccmMatrix
         ? relightCanvas(canvas, classified.debug.ccmMatrix)
-        : null
+        : relightVonKries(canvas, classified.debug.patchRgb.gray, CARD_SRGB.gray)
       const blob = await canvasToJpeg(canvas, 0.92)
       const bytes = await blob.arrayBuffer()
       const [hex, dataUrl] = await Promise.all([

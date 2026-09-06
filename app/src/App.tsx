@@ -49,12 +49,20 @@ export default function App() {
       lon: gps.lon,
       gpsAccuracyM: gps.accuracyM,
     })
-    if (updated) setCurrent((c) => (c && c.id === id ? updated : c))
+    if (updated) {
+      setCurrent((c) =>
+        c && c.id === id ? { ...updated, relitImageDataUrl: c.relitImageDataUrl } : c,
+      )
+    }
   }
 
   function onSeal(id: string, seal: EvidenceSeal) {
     const updated = patchRecord(id, { seal })
-    if (updated) setCurrent((c) => (c && c.id === id ? updated : c))
+    if (updated) {
+      setCurrent((c) =>
+        c && c.id === id ? { ...updated, relitImageDataUrl: c.relitImageDataUrl } : c,
+      )
+    }
   }
 
   async function proveHashMoves() {

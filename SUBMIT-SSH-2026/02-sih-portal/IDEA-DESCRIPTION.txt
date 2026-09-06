@@ -1,0 +1,32 @@
+Idea title: Digital Companion for Field Drug Testing
+PS ID: SIH26231
+Organisation: Narcotics Control Bureau, Ministry of Home Affairs
+Category: Software | Theme: MedTech / BioTech / HealthTech
+College: Shiv Nadar University
+Prototype: https://github.com/aravarav0/narcoticsssh
+
+--- PASTE BELOW (short, ~1900 characters) ---
+
+Field drug-testing kits in use today rely on a colour-change reaction. Officers interpret that colour by eye. Light, phone cameras, and fatigue make the same vial look different to different people, and there is no verifiable record that a test was actually done at a given place and time. NCB notes that these outcomes cannot presently be relied upon as documentary evidence.
+
+We do not invent a new kit or any new hardware. We give the existing kit a phone witness.
+
+The officer photographs the colour-change result with a printed six-square reference card in the same frame. The app finds the card, builds a colour-correction matrix from those squares (von Kries gray-patch fallback if the matrix is unstable), names the kit colour, and classifies it as presumptive positive, negative, or inconclusive using CIE Lab ΔE distance. Glare, clipping, a missing card, or a colour that matches neither reference is refused — inconclusive is a feature, not a failure. The same colour-correction is shown on the photo so the lighting correction is visible, not a black box. There is no neural net.
+
+Every capture is sealed: ISO timestamp, GPS, operator ID, SHA-256 of the image bytes, and an ECDSA P-256 signature. Changing one pixel breaks the hash. Records are hash-chained in a searchable on-device log.
+
+The output is a presumptive field result plus a tamper-evident digital record. It does not replace laboratory confirmatory testing and is not proof of possession.
+
+The prototype is a Vite + React + TypeScript web app that runs in a phone browser (camera + geolocation + Web Crypto). Demo materials are simulated kits only (printed colour sheets / pH strips / food colour). A working overnight build maps 1:1 to the four official bullets: capture with a reference card, classify, tamper-evident record, searchable log.
+
+--- LONGER VERSION (if the portal allows more) ---
+
+Problem. Colorimetric field kits are subjective under mixed illuminants (streetlight, tube light, dusk). Two officers can disagree on “purple enough,” and a notebook line can be written later. NCB’s brief asks for a mobile/web companion that uses a reference colour card, classifies positive / negative / inconclusive, and produces a tamper-evident record (time, GPS, operator ID, cryptographic hash) plus a searchable log — with no new hardware.
+
+Solution. One pocket colour card lives with the kit. One photo contains card + kit. Auto-detection locates the 2×3 card (anchored on yellow and card-purple, hues the kit cannot mimic) and the kit square. Median RGB is sampled inside each region. sRGB is linearised (IEC 61966-2-1). A 3×3 colour-correction matrix maps observed card patches onto the print-run reference; residual too high → von Kries on gray. The kit is converted to CIE Lab and compared by ΔE76 to positive (purple), negative (white/unused), and muddy (inconclusive) centres. Quality flags (patch too small, clipping, glare, card missing, classes too close) force inconclusive.
+
+Evidence. SHA-256 of JPEG bytes, WebCrypto ECDSA P-256, GPS via Geolocation API, fake officer-ID login (no Aadhaar/SSO). Hash-chained localStorage log, searchable by officer or result. UI banner on every result: PRESUMPTIVE — not a lab.
+
+Feasibility. Existing kits, any smartphone browser, a matte printed card. No CNN, no blockchain, no backend required for the MVP. Printer drift is handled by saving that print run as the benchmark. Extreme lighting is handled by correction + refusal, not guesswork.
+
+Impact. Fairer field calls, a documentary trail NCB said was missing, near-zero cost, and an ethical refuse-to-guess path that protects both the officer and the subject. Lab confirmation remains mandatory.

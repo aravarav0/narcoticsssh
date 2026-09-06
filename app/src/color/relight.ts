@@ -1,5 +1,6 @@
 import type { Mat3 } from "./ccm"
-import { linearToSrgb8, srgb8ToLinear, XYZ_TO_SRGB } from "./srgb"
+import { linearToSrgb8, rgb8ToLinear, srgb8ToLinear, XYZ_TO_SRGB } from "./srgb"
+import type { Rgb8 } from "./types"
 
 /**
  * Re-light a whole frame with the SAME colour-correction matrix the classifier
@@ -46,4 +47,19 @@ export function relightCanvas(src: HTMLCanvasElement, M: Mat3, maxSide = 760): s
   }
   ctx.putImageData(img, 0, 0)
   return dst.toDataURL("image/jpeg", 0.9)
+}
+
+/** Fallback when CCM is unstable: per-channel gray-patch white balance on the whole frame. */
+export function relightVonKries(src: HTMLCanvasElement, grayObserved: Rgb8, grayTarget: Rgb8, maxSide = 760): string | null {
+  const obs = rgb8ToLinear(grayObserved)
+  const tgt = rgb8ToLinear(grayTarget)
+  const gr = obs.r > 1e-5 ? tgt.r / obs.r : 1
+  const gg = obs.g > 1e-5 ? tgt.g / obs.g : 1
+  const gb = obs.b > 1e-5 ? tgt.b / obs.b : 1
+  const M: Mat3 = [
+    [gr * 0.4124, gr * 0.2126, gr * 0.0193],
+    [gg * 0.3576, gg * 0.7152, gg * 0.0722],
+    [gb * 0.1805, gb * 0.0722, gb * 0.9505],
+  ]
+  return relightCanvas(src, M, maxSide)
 }

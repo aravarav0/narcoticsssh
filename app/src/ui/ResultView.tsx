@@ -1,6 +1,9 @@
-import { useState, type ReactNode } from "react"
+import { useEffect, useState, type ReactNode } from "react"
+import { CARD_SRGB } from "../color/card"
 import { DEFAULT_LAYOUT } from "../color/constants"
+import { relightCanvas, relightVonKries } from "../color/relight"
 import type { ClassifyDebug, Layout, QualityFlag, ResultLabel } from "../color/types"
+import { loadImage } from "../lib/camera"
 import { closenessPct, explainCall, FLAG_SHORT, rgbCss } from "../lib/explain"
 import { CaptureOverlay, LayoutOverlay } from "./CaptureOverlay"
 import { Banner } from "./Banner"
@@ -46,11 +49,60 @@ export function ResultView(props: {
 }) {
   const [openTech, setOpenTech] = useState(false)
   const [showRelit, setShowRelit] = useState(false)
+  const [relitUrl, setRelitUrl] = useState<string | null>(props.relitImageDataUrl ?? null)
+  const [relitBusy, setRelitBusy] = useState(!props.relitImageDataUrl)
   const overlayLayout = props.detectedLayout ?? DEFAULT_LAYOUT
   const autoDetected = props.detectedLayout != null
   const explained = props.debug ? explainCall(props.result, props.debug) : null
   const d = props.debug?.deltaE
   const flags: QualityFlag[] = props.debug?.qualityFlags ?? []
+
+  useEffect(() => {
+    if (props.relitImageDataUrl) {
+      setRelitUrl(props.relitImageDataUrl)
+      setRelitBusy(false)
+      return
+    }
+    const debug = props.debug
+    const src = props.imageDataUrl
+    if (!debug || !src) {
+      setRelitUrl(null)
+      setRelitBusy(false)
+      return
+    }
+    let cancelled = false
+    setRelitBusy(true)
+    void (async () => {
+      try {
+        const img = await loadImage(src)
+        const canvas = document.createElement("canvas")
+        canvas.width = img.naturalWidth
+        canvas.height = img.naturalHeight
+        const ctx = canvas.getContext("2d", { willReadFrequently: true })
+        if (!ctx) {
+          if (!cancelled) {
+            setRelitUrl(null)
+            setRelitBusy(false)
+          }
+          return
+        }
+        ctx.drawImage(img, 0, 0)
+        const url = debug.ccmMatrix
+          ? relightCanvas(canvas, debug.ccmMatrix)
+          : debug.patchRgb?.gray
+            ? relightVonKries(canvas, debug.patchRgb.gray, CARD_SRGB.gray)
+            : null
+        if (!cancelled) setRelitUrl(url)
+      } catch {
+        if (!cancelled) setRelitUrl(null)
+      } finally {
+        if (!cancelled) setRelitBusy(false)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [props.relitImageDataUrl, props.imageDataUrl, props.debug])
 
   const winner: ResultLabel | null = d
     ? d.positive <= d.negative && d.positive <= d.muddy
@@ -144,22 +196,54 @@ export function ResultView(props: {
         </div>
       )}
 
-      <div className="shot-wrap">
-        <img className="shot" src={props.imageDataUrl} alt="Captured field test" />
-        {autoDetected ? (
-          <LayoutOverlay
-            layout={overlayLayout}
-            kitLabel={props.kitAutoFound ? "kit (found)" : "kit"}
+      <div className="card">
+        <div className="section-head">
+          <p className="section-title">
+            {showRelit ? "Corrected · lighting removed" : "Your photo"}
+          </p>
+          {relitUrl ? (
+            <button className="primary relit-toggle" onClick={() => setShowRelit((v) => !v)}>
+              {showRelit ? "Show original" : "Show corrected"}
+            </button>
+          ) : relitBusy ? (
+            <span className="muted">Building corrected preview…</span>
+          ) : null}
+        </div>
+        <p className="muted" style={{ marginBottom: "0.6rem" }}>
+          {relitUrl
+            ? showRelit
+              ? "This is the un-lit frame: the six card squares set a colour-correction matrix, then the whole photo is dragged into that lighting. Tap Show original to compare."
+              : "Tap Show corrected to un-light this photo from the six card squares — same matrix the app used to call the result."
+            : relitBusy
+              ? "Building the lighting-corrected preview from this photo…"
+              : autoDetected
+                ? "The app found the card and sampled the gold boxes."
+                : "Card not auto-detected, so these are the default framing boxes."}
+        </p>
+        <div className="shot-wrap">
+          <img
+            className="shot"
+            src={showRelit && relitUrl ? relitUrl : props.imageDataUrl}
+            alt={showRelit ? "Lighting-corrected field test" : "Captured field test"}
           />
-        ) : (
-          <CaptureOverlay />
+          {!showRelit &&
+            (autoDetected ? (
+              <LayoutOverlay
+                layout={overlayLayout}
+                kitLabel={props.kitAutoFound ? "kit (found)" : "kit"}
+              />
+            ) : (
+              <CaptureOverlay />
+            ))}
+        </div>
+        {!showRelit && (
+          <p className="muted" style={{ marginTop: "0.5rem" }}>
+            {autoDetected
+              ? "Gold boxes = the six card squares the app sampled. White box = the kit."
+              : "Gold boxes are what the app actually read."}
+          </p>
         )}
       </div>
-      <p className="muted">
-        {autoDetected
-          ? "The app found the card by itself and reconstructed all six squares — the gold boxes are exactly where it sampled. The white box is the kit it read."
-          : "Card not auto-detected, so these are the default framing boxes. Gold boxes are what the app actually read."}
-      </p>
 
       {explained && (
         <div className="card">
@@ -169,31 +253,6 @@ export function ResultView(props: {
               <li key={i}>{b}</li>
             ))}
           </ol>
-        </div>
-      )}
-
-      {props.relitImageDataUrl && (
-        <div className="card">
-          <div className="section-head">
-            <p className="section-title">
-              {showRelit ? "Corrected image (lighting removed)" : "Original photo"}
-            </p>
-            <button className="ghost relit-toggle" onClick={() => setShowRelit((v) => !v)}>
-              {showRelit ? "Show original" : "Show corrected"}
-            </button>
-          </div>
-          <p className="muted" style={{ marginBottom: "0.6rem" }}>
-            Same colour-correction matrix the six card squares set is applied to the whole frame,
-            so the card lands on its reference colours and the kit is read in neutral light. This is
-            the “reverse-engineer the lighting from the card” step, made visible.
-          </p>
-          <div className="shot-wrap">
-            <img
-              className="shot"
-              src={showRelit ? props.relitImageDataUrl : props.imageDataUrl}
-              alt={showRelit ? "Lighting-corrected field test" : "Original field test"}
-            />
-          </div>
         </div>
       )}
 

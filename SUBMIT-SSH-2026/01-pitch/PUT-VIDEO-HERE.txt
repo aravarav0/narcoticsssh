@@ -1,0 +1,5 @@
+Drop your recorded demo here as:
+
+  SIH26231-demo.mp4
+
+Scripts in this folder: VIDEO-SCRIPT-3MIN.md (pitch) and VIDEO-REEL-2MIN.md (reel).
