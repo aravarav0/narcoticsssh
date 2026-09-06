@@ -1,3 +1,27 @@
+type TorchCaps = MediaTrackCapabilities & { torch?: boolean }
+
+/** True when this live track exposes a torch (common on Android Chrome; rare on iOS Safari). */
+export function torchSupported(track: MediaStreamTrack | undefined): boolean {
+  if (!track?.getCapabilities) return false
+  const caps = track.getCapabilities() as TorchCaps
+  return Boolean(caps.torch)
+}
+
+/** Keep the LED on while the live preview is open. No-op if the browser refuses. */
+export async function setTorch(track: MediaStreamTrack | undefined, on: boolean): Promise<boolean> {
+  if (!track) return false
+  try {
+    await track.applyConstraints({ advanced: [{ torch: on }] } as unknown as MediaTrackConstraints)
+    return true
+  } catch {
+    return false
+  }
+}
+
+export function liveVideoTrack(stream: MediaStream | null): MediaStreamTrack | undefined {
+  return stream?.getVideoTracks()[0]
+}
+
 /** Best-effort lock. iOS Safari ignores this; the colour card is the real calibration. */
 export async function tryLockCamera(track: MediaStreamTrack) {
   try {

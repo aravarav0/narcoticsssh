@@ -3,7 +3,7 @@ import { classifyImage } from "../color/classify"
 import { detectCard } from "../color/detect"
 import { relightCanvas } from "../color/relight"
 import { DEFAULT_LAYOUT } from "../color/constants"
-import { canvasToJpeg, loadImage, loadOrientedImage, openRearCamera } from "../lib/camera"
+import { canvasToJpeg, liveVideoTrack, loadImage, loadOrientedImage, openRearCamera, setTorch, torchSupported } from "../lib/camera"
 import { readGps, type GpsFix } from "../lib/gps"
 import { sha256Hex } from "../lib/hash"
 import { loadClassLabs, loadPrintRunRgb } from "../lib/printRun"
@@ -95,7 +95,35 @@ export function CaptureScreen(props: {
   const [busy, setBusy] = useState(false)
   const [mirror, setMirror] = useState(() => sessionStorage.getItem("sih26231.mirror") !== "off")
   const [copiedUrl, setCopiedUrl] = useState(false)
+  const [torchOn, setTorchOn] = useState(false)
+  const [torchAvailable, setTorchAvailable] = useState(false)
+  const [flashHint, setFlashHint] = useState<string | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
+  const torchOnRef = useRef(false)
+
+  function probeTorch(stream: MediaStream) {
+    const track = liveVideoTrack(stream)
+    const ok = torchSupported(track)
+    setTorchAvailable(ok)
+    if (ok && torchOnRef.current) void setTorch(track, true)
+  }
+
+  async function toggleFlash() {
+    const track = liveVideoTrack(streamRef.current)
+    if (!torchSupported(track)) {
+      setFlashHint(
+        isIos()
+          ? "Safari cannot turn the iPhone flash on from this page. Tap Take photo, then in Camera tap the lightning bolt for flash."
+          : "This browser’s live camera has no torch. Use Take photo and turn flash on in the Camera app.",
+      )
+      return
+    }
+    const next = !torchOnRef.current
+    const ok = await setTorch(track, next)
+    torchOnRef.current = ok && next
+    setTorchOn(ok && next)
+    setFlashHint(ok ? null : "Torch refused. Try Enable live camera again, or use Camera-app flash.")
+  }
 
   function toggleMirror() {
     setMirror((on) => {
@@ -111,6 +139,7 @@ export function CaptureScreen(props: {
       const stream = await openRearCamera()
       streamRef.current?.getTracks().forEach((t) => t.stop())
       streamRef.current = stream
+      probeTorch(stream)
       const video = videoRef.current
       if (video) await attachStream(video, stream)
     } catch (err) {
@@ -137,6 +166,7 @@ export function CaptureScreen(props: {
         }
         streamRef.current?.getTracks().forEach((t) => t.stop())
         streamRef.current = stream
+        probeTorch(stream)
         const video = videoRef.current
         if (video) await attachStream(video, stream)
       } catch (err) {
@@ -271,6 +301,20 @@ export function CaptureScreen(props: {
         <CaptureOverlay />
         <button
           type="button"
+          className={`mirror-toggle flash-toggle${torchOn ? " on" : ""}`}
+          onClick={() => void toggleFlash()}
+          disabled={busy}
+          aria-pressed={torchOn}
+          title={
+            torchAvailable
+              ? "Toggle the phone torch on the live camera"
+              : "Live torch not available — tap for how to use Camera flash"
+          }
+        >
+          {torchOn ? "Flash on" : "Flash"}
+        </button>
+        <button
+          type="button"
           className={`mirror-toggle${mirror ? " on" : ""}`}
           onClick={toggleMirror}
           disabled={busy}
@@ -286,6 +330,7 @@ export function CaptureScreen(props: {
         ) : null}
       </div>
       {error ? <p className="error">{error}</p> : null}
+      {flashHint ? <p className="muted">{flashHint}</p> : null}
       <label className="primary file-btn">
         Take photo (iPhone — use this)
         <input

@@ -67,12 +67,10 @@ export function detectCard(image: PixelBuffer): { layout: Layout; kitAutoFound: 
   const blobs = components(mask, hueRad, sw, sh)
   if (blobs.length === 0) return null
 
-  const red = pickBiggest(blobs, (h) => h < 20 || h >= 335)
   const yellow = pickBiggest(blobs, (h) => h >= 40 && h < 80)
-  const purples = blobs.filter((b) => b.hue >= 255 && b.hue < 330).sort((a, b) => b.area - a.area)
-  if (!red || !yellow) return null
+  if (!yellow) return null
 
-  const grid = solveGrid(red, yellow, purples)
+  const grid = solveGrid(blobs, yellow)
   if (!grid) return null
   const { origin, ex, ey } = grid
   const unit = Math.hypot(ex.x, ex.y)
@@ -163,38 +161,59 @@ function pickBiggest(blobs: Blob[], hueTest: (h: number) => boolean): Blob | nul
   return best
 }
 
-/** center(col,row) = origin + col*ex + row*ey. */
-function solveGrid(red: Blob, yellow: Blob, purples: Blob[]): { origin: Vec; ex: Vec; ey: Vec } | null {
-  const anchors: { c: number; r: number; x: number; y: number }[] = [
-    { c: 2, r: 0, x: red.cx, y: red.cy },
-    { c: 1, r: 1, x: yellow.cx, y: yellow.cy },
-  ]
-  if (purples.length) {
-    const cardPurple = purples.reduce((a, b) => (a.cx + a.cy >= b.cx + b.cy ? a : b))
-    anchors.push({ c: 2, r: 1, x: cardPurple.cx, y: cardPurple.cy })
+/**
+ * center(col,row) = origin + col*ex + row*ey.
+ *
+ * Robust reconstruction that survives lighting shifts: anchor on YELLOW (c1,r1)
+ * and the card PURPLE (c2,r1) — the two hues the kit can never be confused with —
+ * then derive the row axis. Any blob that is much larger than a card patch or far
+ * from the card cluster (i.e. the coloured kit, which can drift into red/magenta
+ * outdoors) is rejected as an anchor. RED, when it is a genuine card patch, only
+ * refines the row vector; otherwise we assume a regular grid and rotate ex.
+ */
+function solveGrid(blobs: Blob[], yellow: Blob): { origin: Vec; ex: Vec; ey: Vec } | null {
+  const near = (a: Blob | Vec, b: Blob | Vec) => Math.hypot(anyX(a) - anyX(b), anyY(a) - anyY(b))
+  const sizeOk = (b: Blob) => b.area >= 0.22 * yellow.area && b.area <= 3.5 * yellow.area
+
+  // card PURPLE (c2,r1): purple/violet hue, card-sized, closest to yellow (adjacent cell)
+  const purple = blobs
+    .filter((b) => b !== yellow && b.hue >= 255 && b.hue < 340 && sizeOk(b))
+    .sort((a, b) => near(a, yellow) - near(b, yellow))[0]
+  if (!purple) return null
+
+  const ex: Vec = { x: purple.cx - yellow.cx, y: purple.cy - yellow.cy }
+  const unit = Math.hypot(ex.x, ex.y)
+  if (unit < 4) return null
+
+  // card RED (c2,r0): red/pink, card-sized, closest to the purple directly below it
+  const red = blobs
+    .filter((b) => b !== yellow && b !== purple && (b.hue < 20 || b.hue >= 335) && sizeOk(b))
+    .sort((a, b) => near(a, purple) - near(b, purple))[0]
+
+  let ey: Vec | null = null
+  if (red) {
+    // red(c2,r0) sits one row above purple(c2,r1): ey ≈ purple − red
+    const cand: Vec = { x: purple.cx - red.cx, y: purple.cy - red.cy }
+    const mag = Math.hypot(cand.x, cand.y)
+    const perp = Math.abs(cand.x * ex.x + cand.y * ex.y) < 0.5 * unit * mag
+    if (mag > 0.5 * unit && mag < 2 * unit && perp) ey = cand
+  }
+  if (!ey) {
+    // regular grid: row axis is ex rotated 90°; pick the sense pointing "down" the card
+    const rotA: Vec = { x: -ex.y, y: ex.x }
+    ey = rotA.y >= 0 ? rotA : { x: ex.y, y: -ex.x }
   }
 
-  if (anchors.length >= 3) {
-    const rows = anchors.slice(0, 3).map((a) => [a.c, a.r, 1])
-    const inv = invert3(rows)
-    if (!inv) return null
-    const bx = anchors.slice(0, 3).map((a) => a.x)
-    const by = anchors.slice(0, 3).map((a) => a.y)
-    const px = matVec(inv, bx)
-    const py = matVec(inv, by)
-    return {
-      ex: { x: px[0], y: py[0] },
-      ey: { x: px[1], y: py[1] },
-      origin: { x: px[2], y: py[2] },
-    }
-  }
-
-  // axis-aligned two-anchor fallback (red col2/row0, yellow col1/row1)
-  const ex: Vec = { x: red.cx - yellow.cx, y: 0 }
-  const ey: Vec = { x: 0, y: yellow.cy - red.cy }
-  const origin: Vec = { x: yellow.cx - ex.x, y: red.cy }
-  if (Math.abs(ex.x) < 4 || Math.abs(ey.y) < 4) return null
+  // origin = c0,r0; yellow is c1,r1
+  const origin: Vec = { x: yellow.cx - ex.x - ey.x, y: yellow.cy - ex.y - ey.y }
   return { origin, ex, ey }
+}
+
+function anyX(p: Blob | Vec): number {
+  return "cx" in p ? p.cx : p.x
+}
+function anyY(p: Blob | Vec): number {
+  return "cy" in p ? p.cy : p.y
 }
 
 function findKit(
@@ -203,19 +222,24 @@ function findKit(
   ex: Vec,
   ey: Vec,
 ): { center: Vec; autoFound: boolean } {
-  const topMid: Vec = { x: origin.x + ex.x, y: origin.y + ex.y }
+  const topMid: Vec = { x: origin.x + ex.x, y: origin.y + ex.y } // c1,r0 (top-middle patch)
   const unit = Math.hypot(ex.x, ex.y)
+  const eyLen = Math.hypot(ey.x, ey.y) || unit
+  const uy: Vec = { x: -ey.x / eyLen, y: -ey.y / eyLen } // toward the kit (away from card body)
+  const ux: Vec = { x: ex.x / unit, y: ex.y / unit }
   let best: Blob | null = null
   for (const b of blobs) {
-    const dx = Math.abs(b.cx - topMid.x)
-    const dy = topMid.y - b.cy
-    if (dy > 0.4 * unit && dy < 6 * unit && dx < 2 * unit) {
+    const dx = b.cx - topMid.x
+    const dy = b.cy - topMid.y
+    const along = dx * uy.x + dy * uy.y // distance out past the top row
+    const perp = dx * ux.x + dy * ux.y // sideways offset
+    if (along > 0.4 * unit && along < 6 * unit && Math.abs(perp) < 2 * unit) {
       if (!best || b.area > best.area) best = b
     }
   }
   if (best) return { center: { x: best.cx, y: best.cy }, autoFound: true }
   return {
-    center: { x: origin.x + ex.x - 1.4 * ey.x, y: origin.y + ex.y - 1.4 * ey.y },
+    center: { x: topMid.x + 1.4 * uy.x * unit, y: topMid.y + 1.4 * uy.y * unit },
     autoFound: false,
   }
 }
@@ -232,27 +256,3 @@ function clamp01(v: number): number {
   return v < 0 ? 0 : v > 1 ? 1 : v
 }
 
-function matVec(m: number[][], v: number[]): number[] {
-  return [
-    m[0][0] * v[0] + m[0][1] * v[1] + m[0][2] * v[2],
-    m[1][0] * v[0] + m[1][1] * v[1] + m[1][2] * v[2],
-    m[2][0] * v[0] + m[2][1] * v[1] + m[2][2] * v[2],
-  ]
-}
-
-function invert3(m: number[][]): number[][] | null {
-  const [a, b, c] = m[0]
-  const [d, e, f] = m[1]
-  const [g, h, i] = m[2]
-  const A = e * i - f * h
-  const B = f * g - d * i
-  const C = d * h - e * g
-  const det = a * A + b * B + c * C
-  if (Math.abs(det) < 1e-9) return null
-  const inv = 1 / det
-  return [
-    [A * inv, (c * h - b * i) * inv, (b * f - c * e) * inv],
-    [B * inv, (a * i - c * g) * inv, (c * d - a * f) * inv],
-    [C * inv, (b * g - a * h) * inv, (a * e - b * d) * inv],
-  ]
-}

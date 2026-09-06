@@ -2,13 +2,6 @@ import { useState, type ReactNode } from "react"
 import { DEFAULT_LAYOUT } from "../color/constants"
 import type { ClassifyDebug, Layout, QualityFlag, ResultLabel } from "../color/types"
 import { closenessPct, explainCall, FLAG_SHORT, rgbCss } from "../lib/explain"
-import {
-  benchmarkStatus,
-  clearBenchmarks,
-  savePrintRunRgb,
-  setNegativeLab,
-  setPositiveLab,
-} from "../lib/printRun"
 import { CaptureOverlay, LayoutOverlay } from "./CaptureOverlay"
 import { Banner } from "./Banner"
 
@@ -52,14 +45,12 @@ export function ResultView(props: {
   extra?: ReactNode
 }) {
   const [openTech, setOpenTech] = useState(false)
-  const [benchNote, setBenchNote] = useState<string | null>(null)
-  const [showRelit, setShowRelit] = useState(true)
+  const [showRelit, setShowRelit] = useState(false)
   const overlayLayout = props.detectedLayout ?? DEFAULT_LAYOUT
   const autoDetected = props.detectedLayout != null
   const explained = props.debug ? explainCall(props.result, props.debug) : null
   const d = props.debug?.deltaE
   const flags: QualityFlag[] = props.debug?.qualityFlags ?? []
-  const bench = benchmarkStatus()
 
   const winner: ResultLabel | null = d
     ? d.positive <= d.negative && d.positive <= d.muddy
@@ -153,6 +144,23 @@ export function ResultView(props: {
         </div>
       )}
 
+      <div className="shot-wrap">
+        <img className="shot" src={props.imageDataUrl} alt="Captured field test" />
+        {autoDetected ? (
+          <LayoutOverlay
+            layout={overlayLayout}
+            kitLabel={props.kitAutoFound ? "kit (found)" : "kit"}
+          />
+        ) : (
+          <CaptureOverlay />
+        )}
+      </div>
+      <p className="muted">
+        {autoDetected
+          ? "The app found the card by itself and reconstructed all six squares — the gold boxes are exactly where it sampled. The white box is the kit it read."
+          : "Card not auto-detected, so these are the default framing boxes. Gold boxes are what the app actually read."}
+      </p>
+
       {explained && (
         <div className="card">
           <p className="section-title">Why this happened</p>
@@ -186,71 +194,6 @@ export function ResultView(props: {
               alt={showRelit ? "Lighting-corrected field test" : "Original field test"}
             />
           </div>
-        </div>
-      )}
-
-      <div className="shot-wrap">
-        <img className="shot" src={props.imageDataUrl} alt="Captured field test" />
-        {autoDetected ? (
-          <LayoutOverlay
-            layout={overlayLayout}
-            kitLabel={props.kitAutoFound ? "kit (found)" : "kit"}
-          />
-        ) : (
-          <CaptureOverlay />
-        )}
-      </div>
-      <p className="muted">
-        {autoDetected
-          ? "The app found the card by itself and reconstructed all six squares — the gold boxes are exactly where it sampled. The pink box is the kit it read."
-          : "Card not auto-detected, so these are the default framing boxes. Gold boxes are what the app actually read."}
-      </p>
-
-      {props.debug && (
-        <div className="demo-card">
-          <div className="demo-card-title">Set benchmark (your sheets / lighting)</div>
-          <p className="muted">
-            Defaults are the daylight craft-sheet card: lavender purple = positive, white = negative.
-            Override here if the lamp changes. Card saved: {bench.card ? "yes" : "not yet"}.
-            Kit colours saved: {bench.classes ? "yes" : "not yet"}.
-          </p>
-          <button
-            className="ghost"
-            onClick={() => {
-              savePrintRunRgb(props.debug!.patchRgb)
-              setBenchNote("Saved the six card squares. Retake a test after this.")
-            }}
-          >
-            1 · Save these 6 squares as my printed card
-          </button>
-          <button
-            className="ghost"
-            onClick={() => {
-              setPositiveLab(props.debug!.kitLab)
-              setBenchNote("Saved this kit colour as POSITIVE. Next purple shot should call positive.")
-            }}
-          >
-            2 · This kit is my POSITIVE
-          </button>
-          <button
-            className="ghost"
-            onClick={() => {
-              setNegativeLab(props.debug!.kitLab)
-              setBenchNote("Saved this kit colour as NEGATIVE (white / unused).")
-            }}
-          >
-            3 · This kit is my NEGATIVE (white)
-          </button>
-          <button
-            className="ghost"
-            onClick={() => {
-              clearBenchmarks()
-              setBenchNote("Cleared. Back to daylight purple / white defaults.")
-            }}
-          >
-            Reset to daylight defaults
-          </button>
-          {benchNote ? <p className="muted">{benchNote}</p> : null}
         </div>
       )}
 

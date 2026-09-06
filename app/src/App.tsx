@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react"
 import { Banner } from "./ui/Banner"
+import { BenchmarkPanel } from "./ui/BenchmarkPanel"
 import { CaptureScreen } from "./ui/CaptureScreen"
 import { ResultView } from "./ui/ResultView"
 import { Steps } from "./ui/Steps"
@@ -145,6 +146,10 @@ export default function App() {
           <button className="ghost" onClick={() => setPage("log")}>
             Open existing log
           </button>
+          <details className="more">
+            <summary>Custom colour benchmarks (optional)</summary>
+            <BenchmarkPanel last={records[0] ?? null} />
+          </details>
         </>
       )}
 

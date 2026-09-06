@@ -374,6 +374,10 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
   color: var(--gold) !important;
 }
 .mirror-toggle:disabled { opacity: 0.4; }
+.flash-toggle {
+  right: auto;
+  left: 0.55rem;
+}
 
 /* ─── Capture overlay boxes ───────────────────────────────────────────── */
 .overlay { position: absolute; inset: 0; pointer-events: none; }
