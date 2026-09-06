@@ -4,7 +4,7 @@ import { detectCard } from "../color/detect"
 import { relightCanvas, relightVonKries } from "../color/relight"
 import { CARD_SRGB } from "../color/card"
 import { DEFAULT_LAYOUT } from "../color/constants"
-import { canvasToJpeg, liveVideoTrack, loadImage, loadOrientedImage, openRearCamera, setTorch, torchSupported } from "../lib/camera"
+import { canvasToJpeg, liveVideoTrack, loadImage, openRearCamera, setTorch, torchSupported } from "../lib/camera"
 import { readGps, type GpsFix } from "../lib/gps"
 import { sha256Hex } from "../lib/hash"
 import { loadClassLabs, loadPrintRunRgb } from "../lib/printRun"
@@ -268,12 +268,6 @@ export function CaptureScreen(props: {
     await fromSource(video, video.videoWidth, video.videoHeight, { mirror, fit: "cover" })
   }
 
-  async function onFile(file: File | undefined) {
-    if (!file) return
-    const oriented = await loadOrientedImage(file)
-    await fromSource(oriented.source, oriented.width, oriented.height, { fit: "native" })
-  }
-
   async function loadDemo(name: "demo-positive.png" | "demo-negative.png" | "demo-black.png") {
     const img = await loadImage(`/${name}`)
     await fromSource(img, img.naturalWidth, img.naturalHeight, { fit: "native" })
@@ -332,19 +326,10 @@ export function CaptureScreen(props: {
       </div>
       {error ? <p className="error">{error}</p> : null}
       {flashHint ? <p className="muted">{flashHint}</p> : null}
-      <label className="primary file-btn">
-        Take photo (iPhone — use this)
-        <input
-          type="file"
-          accept="image/*"
-          capture="environment"
-          onChange={(e) => void onFile(e.target.files?.[0])}
-        />
-      </label>
       <button className="ghost" onClick={() => void startCamera()} disabled={busy}>
         Enable live camera
       </button>
-      <button className="ghost" onClick={() => void snap()} disabled={busy}>
+      <button className="primary" onClick={() => void snap()} disabled={busy}>
         {busy ? "Reading colour…" : "Capture live preview"}
       </button>
       <PhoneLinkCard copied={copiedUrl} onCopied={setCopiedUrl} />

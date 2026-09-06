@@ -29,7 +29,7 @@ export type TestRecord = {
 }
 
 const KEY = "sih26231.records"
-const MAX = 40
+const MAX = 25
 
 export function loadRecords(): TestRecord[] {
   try {
@@ -40,11 +40,46 @@ export function loadRecords(): TestRecord[] {
   }
 }
 
+function isQuotaError(e: unknown): boolean {
+  return (
+    e instanceof DOMException &&
+    (e.name === "QuotaExceededError" ||
+      e.name === "NS_ERROR_DOM_QUOTA_REACHED" ||
+      e.code === 22 ||
+      e.code === 1014)
+  )
+}
+
+/**
+ * Persist the newest-first list, self-trimming so the phone never dies on
+ * "quota exceeded". Each record carries a full JPEG data URL, so localStorage
+ * (~5 MB) fills up: on quota errors we drop the oldest records one at a time,
+ * then as a last resort strip the debug blob from the single newest record.
+ */
+function persist(records: TestRecord[]): TestRecord[] {
+  let list = records.slice(0, MAX)
+  while (list.length > 0) {
+    try {
+      localStorage.setItem(KEY, JSON.stringify(list))
+      return list
+    } catch (e) {
+      if (!isQuotaError(e)) throw e
+      if (list.length > 1) {
+        list = list.slice(0, list.length - 1) // evict the oldest test
+      } else {
+        const stripped: TestRecord[] = [{ ...list[0], debug: null }]
+        localStorage.setItem(KEY, JSON.stringify(stripped)) // let it throw if even this fails
+        return stripped
+      }
+    }
+  }
+  return list
+}
+
 export function saveRecord(record: TestRecord) {
   // The re-lit preview is large; keep it only in memory, not in localStorage.
   const slim: TestRecord = { ...record, relitImageDataUrl: null }
-  const all = [slim, ...loadRecords()].slice(0, MAX)
-  localStorage.setItem(KEY, JSON.stringify(all))
+  persist([slim, ...loadRecords()])
 }
 
 export function makeRecord(input: {
@@ -81,6 +116,6 @@ export function makeRecord(input: {
 
 export function patchRecord(id: string, patch: Partial<TestRecord>) {
   const all = loadRecords().map((r) => (r.id === id ? { ...r, ...patch } : r))
-  localStorage.setItem(KEY, JSON.stringify(all))
-  return all.find((r) => r.id === id) ?? null
+  const saved = persist(all)
+  return saved.find((r) => r.id === id) ?? all.find((r) => r.id === id) ?? null
 }
