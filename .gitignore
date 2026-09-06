@@ -8,6 +8,10 @@ __pycache__/
 calibration/inbox/*
 !calibration/inbox/.gitkeep
 
+# Stray root copies — the curated versions live in SUBMIT-SSH-2026/
+/SIH26231-idea-6slide.pptx
+/SIH26231-SSH-pitch.pptx
+
 # Personal / classroom photos — do not push faces or kit shots
 IMG_*.PNG
 IMG_*.png
